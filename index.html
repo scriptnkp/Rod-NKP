@@ -306,7 +306,7 @@
             else if(page === 'check') renderInspectionPage(contentDiv);
             else if(page === 'use') renderUsePage(contentDiv);
             else if(page === 'return') renderReturnPage(contentDiv);
-            else if(page === 'fuel') renderFuelDashboard(contentDiv); // หน้า Dashboard น้ำมัน
+            else if(page === 'fuel') renderFuelDashboard(contentDiv);
             else if(page === 'car-settings') renderAdminCarPage(contentDiv);
             else contentDiv.innerHTML = `<h2 style="color:var(--text-light);">กำลังพัฒนาระบบ...</h2>`;
         }
@@ -354,17 +354,28 @@
         }
 
         function filterFuelTable() {
-            const sangkat = document.getElementById('filter-fuel-sangkat').value;
-            const phanek = document.getElementById('filter-fuel-phanek').value;
-            const plate = document.getElementById('filter-fuel-plate').value;
+            const sangkatEl = document.getElementById('filter-fuel-sangkat');
+            const phanekEl = document.getElementById('filter-fuel-phanek');
+            const plateEl = document.getElementById('filter-fuel-plate');
+
+            if (!sangkatEl || !phanekEl || !plateEl) return;
+
+            const sangkat = sangkatEl.value;
+            const phanek = phanekEl.value;
+            const plate = plateEl.value;
 
             const filtered = currentFuelsList.filter(f => {
                 return (!sangkat || f.sangkat === sangkat) && (!phanek || f.phanek === phanek) && (!plate || f.plate === plate);
             });
 
-            document.getElementById('fuel-table-loader').classList.add('hidden');
-            document.getElementById('fuel-table-wrapper').classList.remove('hidden');
+            const loader = document.getElementById('fuel-table-loader');
+            const wrapper = document.getElementById('fuel-table-wrapper');
             const tbody = document.getElementById('fuel-table-body');
+            
+            if (loader) loader.classList.add('hidden');
+            if (wrapper) wrapper.classList.remove('hidden');
+            if (!tbody) return;
+
             tbody.innerHTML = '';
 
             if(filtered.length === 0) {
@@ -466,26 +477,50 @@
             document.getElementById('fuel-vat').innerText = vat.toFixed(2);
         }
 
-        // --- เพิ่ม POPUP ยืนยันตรงนี้ ---
+        // ==========================================
+        // แจ้ง Popup ให้น่าเชื่อถือ (แสดงทุกช่องที่กรอก) ก่อน Submit
+        // ==========================================
         async function submitFuel() {
             const id = document.getElementById('fuel-id').value;
+            const sangkat = document.getElementById('fuel-sangkat').value;
+            const phanek = document.getElementById('fuel-phanek').value;
             const plate = document.getElementById('fuel-plate').value;
+            const brand = document.getElementById('fuel-brand').value;
+            const type = document.getElementById('fuel-type').value;
+            const mile = document.getElementById('fuel-mile').value;
+            const fuelType = document.getElementById('fuel-type-oil').value;
+            const station = document.getElementById('fuel-station').value;
+            const taxInvoice = document.getElementById('fuel-tax-invoice').value;
+            const price = document.getElementById('fuel-price').value;
             const quantity = document.getElementById('fuel-quantity').value;
             const totalAmount = document.getElementById('fuel-total').value;
-            const fuelType = document.getElementById('fuel-type-oil').value;
+            const subtotal = document.getElementById('fuel-subtotal').innerText;
+            const vat = document.getElementById('fuel-vat').innerText;
+            const book = document.getElementById('fuel-book').value;
+            const docNo = document.getElementById('fuel-no').value;
+            const network = document.getElementById('fuel-network').value;
+            const wbs = document.getElementById('fuel-wbs').value;
 
             if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning');
 
-            // 1. Popup ยืนยันข้อมูลก่อนบันทึก
+            // 1. Popup ยืนยันข้อมูลก่อนบันทึก (โชว์ทุกอย่างที่กรอก)
             const confirmResult = await Swal.fire({
                 title: 'ตรวจสอบข้อมูลก่อนบันทึก',
                 html: `
-                    <div style="text-align: left; font-size: 15px; background: #F9FAFB; padding: 15px; border-radius: 8px;">
-                        <b>ทะเบียนรถ:</b> ${plate}<br>
-                        <b>เชื้อเพลิง:</b> ${fuelType || '-'}<br>
-                        <b>ปริมาณ:</b> ${quantity || 0} ลิตร<br>
+                    <div style="text-align: left; font-size: 14px; background: #F9FAFB; padding: 15px; border-radius: 8px; max-height: 50vh; overflow-y: auto; border: 1px solid #E5E7EB;">
+                        <p style="margin-bottom: 5px;"><b>รถยนต์:</b> ${plate} (${brand} ${type})</p>
+                        <p style="margin-bottom: 5px;"><b>สังกัด/แผนก:</b> ${sangkat || '-'} / ${phanek || '-'}</p>
+                        <p style="margin-bottom: 5px;"><b>เลขไมล์:</b> ${mile || '-'}</p>
                         <hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;">
-                        <b>ยอดชำระรวม:</b> <span style="color:var(--danger); font-weight:bold; font-size: 18px;">฿${totalAmount || '0.00'}</span>
+                        <p style="margin-bottom: 5px;"><b>สถานีบริการ:</b> ${station || '-'} (บิล: ${taxInvoice || '-'})</p>
+                        <p style="margin-bottom: 5px;"><b>เล่มที่/เลขที่:</b> ${book || '-'} / ${docNo || '-'}</p>
+                        <p style="margin-bottom: 5px;"><b>เชื้อเพลิง:</b> ${fuelType || '-'}</p>
+                        <p style="margin-bottom: 5px;"><b>ปริมาณ:</b> ${quantity || 0} ลิตร (ราคา ฿${price || 0}/ลิตร)</p>
+                        <p style="margin-bottom: 5px;"><b>โครงข่าย/WBS:</b> ${network || '-'} / ${wbs || '-'}</p>
+                        <hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>มูลค่าสินค้า:</span> <span>฿${subtotal}</span></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>VAT 7%:</span> <span>฿${vat}</span></div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 16px;"><b>ยอดชำระรวม:</b> <b style="color:var(--danger);">฿${totalAmount || '0.00'}</b></div>
                     </div>
                 `,
                 icon: 'info',
@@ -497,9 +532,7 @@
             });
 
             // ถ้าผู้ใช้กดยกเลิก
-            if (!confirmResult.isConfirmed) {
-                return; 
-            }
+            if (!confirmResult.isConfirmed) return; 
 
             // 2. ถ้ากดยืนยัน ให้เริ่มกระบวนการส่งข้อมูล
             document.getElementById('submitFuelBtn').disabled = true; 
@@ -511,7 +544,7 @@
 
             const payload = { 
                 action: id ? 'edit_fuel' : 'save_fuel', id: id,
-                empName: user.name, sangkat: document.getElementById('fuel-sangkat').value, phanek: document.getElementById('fuel-phanek').value, plate: plate, mile: document.getElementById('fuel-mile').value, fuelType: fuelType, station: document.getElementById('fuel-station').value, taxInvoice: document.getElementById('fuel-tax-invoice').value, price: document.getElementById('fuel-price').value, quantity: quantity, totalAmount: totalAmount, bookNo: document.getElementById('fuel-book').value, docNo: document.getElementById('fuel-no').value, network: document.getElementById('fuel-network').value, wbs: document.getElementById('fuel-wbs').value, receiptBase64: receiptB64, ypBase64: ypB64 
+                empName: user.name, sangkat: sangkat, phanek: phanek, plate: plate, mile: mile, fuelType: fuelType, station: station, taxInvoice: taxInvoice, price: price, quantity: quantity, totalAmount: totalAmount, bookNo: book, docNo: docNo, network: network, wbs: wbs, receiptBase64: receiptB64, ypBase64: ypB64 
             };
 
             try {
@@ -525,7 +558,7 @@
                     Swal.fire('ผิดพลาด', res.message, 'error');
                 }
             } catch(e) { 
-                Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ (อย่าลืมเปิด Localhost หรืออัพขึ้น Github นะครับ!)', 'error'); 
+                Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ (อย่าลืมเปิดผ่าน Localhost หรืออัพขึ้น Github นะครับ!)', 'error'); 
             } finally { 
                 document.getElementById('submitFuelBtn').disabled = false; 
                 document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล'; 
