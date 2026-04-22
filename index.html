@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (100% COMPLETE + CORS FIX) -->
+<!-- Role: Frontend Full (100% COMPLETE + ACTION FIX) -->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -228,7 +228,7 @@
         let currentFuelsList = [];
 
         // ==========================================
-        // ฟังก์ชันหลักที่เอา Header ออกเพื่อแก้ CORS อย่างสมบูรณ์ 100%
+        // ฟังก์ชันหลัก (เอา Header ออกเพื่อให้ทะลุ CORS ได้ 100%)
         // ==========================================
         async function apiCall(payload) {
             try {
@@ -490,7 +490,7 @@
             document.getElementById('fuel-vat').innerText = vat.toFixed(2);
         }
 
-        // --- POPUP ยืนยันข้อมูลก่อนส่ง (หน้าเติมน้ำมัน) ---
+        // --- POPUP ยืนยันข้อมูลก่อนส่ง (หน้าเติมน้ำมัน) พร้อม ACTION ที่แก้ไขแล้ว ---
         async function submitFuel() {
             const id = document.getElementById('fuel-id').value;
             const sangkat = document.getElementById('fuel-sangkat').value;
@@ -514,7 +514,6 @@
 
             if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning');
 
-            // 1. Popup ยืนยันข้อมูลแบบเต็ม
             const confirmResult = await Swal.fire({
                 title: 'ตรวจสอบข้อมูลก่อนบันทึก',
                 html: `
@@ -544,7 +543,6 @@
 
             if (!confirmResult.isConfirmed) return; 
 
-            // 2. ส่งข้อมูลหลังกดยืนยัน
             document.getElementById('submitFuelBtn').disabled = true; 
             document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึกข้อมูลและรูปภาพ...';
 
@@ -552,8 +550,9 @@
             const ypB64 = await fileToBase64(document.getElementById('fuel-img-yp').files[0]);
             const user = JSON.parse(localStorage.getItem('user_session'));
 
+            // ตรงนี้สำคัญครับ! เปลี่ยนจาก save_fuel เป็น add_fuel เพื่อให้ชื่อตรงกับ Code.gs
             const payload = { 
-                action: id ? 'edit_fuel' : 'save_fuel', id: id,
+                action: id ? 'edit_fuel' : 'add_fuel', id: id,
                 empName: user.name, sangkat: sangkat, phanek: phanek, plate: plate, mile: mile, fuelType: fuelType, station: station, taxInvoice: taxInvoice, price: price, quantity: quantity, totalAmount: totalAmount, bookNo: book, docNo: docNo, network: network, wbs: wbs, receiptBase64: receiptB64, ypBase64: ypB64 
             };
 
