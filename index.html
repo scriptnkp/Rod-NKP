@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (FIX CORS + Popup Check) -->
+<!-- Role: Frontend Full (100% COMPLETE + CORS FIX) -->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -227,12 +227,13 @@
         let currentCarsList = []; 
         let currentFuelsList = [];
 
-        // ฟังก์ชันหลักที่แก้ไขเรื่อง CORS 100% (บังคับใส่ Header text/plain ให้ทุกการเชื่อมต่อ)
+        // ==========================================
+        // ฟังก์ชันหลักที่เอา Header ออกเพื่อแก้ CORS อย่างสมบูรณ์ 100%
+        // ==========================================
         async function apiCall(payload) {
             try {
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
                 return await response.json();
@@ -489,7 +490,7 @@
             document.getElementById('fuel-vat').innerText = vat.toFixed(2);
         }
 
-        // --- เพิ่ม POPUP ยืนยันข้อมูลทุกช่องก่อนบันทึก ---
+        // --- POPUP ยืนยันข้อมูลก่อนส่ง (หน้าเติมน้ำมัน) ---
         async function submitFuel() {
             const id = document.getElementById('fuel-id').value;
             const sangkat = document.getElementById('fuel-sangkat').value;
@@ -513,7 +514,7 @@
 
             if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning');
 
-            // 1. Popup ยืนยันข้อมูลแบบเต็มสตรีม
+            // 1. Popup ยืนยันข้อมูลแบบเต็ม
             const confirmResult = await Swal.fire({
                 title: 'ตรวจสอบข้อมูลก่อนบันทึก',
                 html: `
@@ -541,10 +542,9 @@
                 cancelButtonText: 'กลับไปแก้ไข'
             });
 
-            // ถ้าผู้ใช้กดยกเลิก
             if (!confirmResult.isConfirmed) return; 
 
-            // 2. ถ้ากดยืนยัน ให้เริ่มกระบวนการส่งข้อมูล
+            // 2. ส่งข้อมูลหลังกดยืนยัน
             document.getElementById('submitFuelBtn').disabled = true; 
             document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึกข้อมูลและรูปภาพ...';
 
@@ -568,7 +568,7 @@
                     Swal.fire('ผิดพลาด', res.message, 'error');
                 }
             } catch(e) { 
-                Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ (โปรดตรวจสอบการตั้งค่า Github หรือ Internet)', 'error'); 
+                Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ (โปรดตรวจสอบการเชื่อมต่อ Internet)', 'error'); 
             } finally { 
                 document.getElementById('submitFuelBtn').disabled = false; 
                 document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล'; 
