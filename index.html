@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (Responsive, Image Compression, Filter Fix) -->
+<!-- Role: Frontend Full (Hide Debt on Add, Full Popup Summary) -->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -160,7 +160,8 @@
             <div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div>
             <input type="hidden" id="fuel-id">
             
-            <div style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;">
+            <!-- ส่วนตั้งหนี้ ซ่อนเมื่อเพิ่มใหม่ แสดงเมื่อแก้ไข -->
+            <div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;">
                 <input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;">
                 <label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label>
             </div>
@@ -175,10 +176,28 @@
                 <div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="fuel-brand" readonly placeholder="Auto-fill"></div>
                 <div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="fuel-type" readonly placeholder="Auto-fill"></div>
             </div>
+
             <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
             <div class="flex-row">
                 <div class="input-group flex-col"><label>เลขไมล์</label><input type="number" id="fuel-mile"></div>
-                <div class="input-group flex-col"><label>เชื้อเพลิง</label><input type="text" id="fuel-type-oil" placeholder="เช่น DIESEL B7"></div>
+                <div class="input-group flex-col">
+                    <label>เชื้อเพลิง</label>
+                    <select id="fuel-type-oil">
+                        <option value="">- เลือกชนิดเชื้อเพลิง -</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Diesel B7">Diesel B7</option>
+                        <option value="Diesel B20">Diesel B20</option>
+                        <option value="Diesel Premium">Diesel Premium</option>
+                        <option value="Gasoline 95">Gasoline 95 (เบนซิน 95)</option>
+                        <option value="Gasohol 95">Gasohol 95</option>
+                        <option value="Gasohol 91">Gasohol 91</option>
+                        <option value="Gasohol E20">Gasohol E20</option>
+                        <option value="Gasohol E85">Gasohol E85</option>
+                        <option value="NGV">NGV</option>
+                        <option value="LPG">LPG</option>
+                        <option value="EV (Electric)">EV (Electric)</option>
+                    </select>
+                </div>
             </div>
             <div class="flex-row">
                 <div class="input-group flex-col"><label>สถานีบริการ (ปั๊ม)</label><input type="text" id="fuel-station"></div>
@@ -251,10 +270,9 @@
             return dateStr;
         }
 
-        // ฟังก์ชันบีบอัดรูปภาพด้วย Canvas (ลดขนาดภาพ 10MB -> ~200KB)
         function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) {
             return new Promise((resolve, reject) => {
-                if (!file) return resolve(""); // ถ้าไม่ได้เลือกไฟล์ ให้คืนค่าว่าง
+                if (!file) return resolve("");
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (event) => {
@@ -330,7 +348,7 @@
         }
 
         // ==========================================
-        // PAGE: FUEL DASHBOARD (ประวัติน้ำมัน + Filter + Pagination)
+        // PAGE: FUEL DASHBOARD (ประวัติน้ำมัน)
         // ==========================================
         async function renderFuelDashboard(container) {
             container.innerHTML = `
@@ -360,7 +378,6 @@
                 </div>
             `;
             
-            // โหลดตัวเลือกเริ่มต้น
             const selectSangkat = document.getElementById('filter-fuel-sangkat'); [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => selectSangkat.add(new Option(s, s)));
             const selectPhanek = document.getElementById('filter-fuel-phanek'); [...new Set(currentCarsList.map(c => c.phanek))].forEach(p => selectPhanek.add(new Option(p, p)));
             const selectPlate = document.getElementById('filter-fuel-plate'); [...new Set(currentCarsList.map(c => c.plate))].forEach(pl => selectPlate.add(new Option(pl, pl)));
@@ -373,7 +390,6 @@
             try { const result = await apiCall({ action: 'get_fuels' }); if(result.status === 'success') currentFuelsList = result.data; } catch(e) {}
         }
 
-        // เชื่อมโยง Dropdown ของตัวกรอง
         function updateFilterFuelPhanek() {
             const s = document.getElementById('filter-fuel-sangkat').value;
             const selectP = document.getElementById('filter-fuel-phanek');
@@ -403,6 +419,7 @@
             const pEl = document.getElementById('filter-fuel-phanek');
             const plEl = document.getElementById('filter-fuel-plate');
             const tEl = document.getElementById('filter-fuel-time');
+
             if(!sEl || !pEl || !plEl || !tEl) return;
 
             const timeFilter = tEl.value;
@@ -418,8 +435,12 @@
                         if(parts.length===3) d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
                     }
                     if(!isNaN(d)) {
-                        if (timeFilter === 'month') dateMatch = (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear());
-                        else if (timeFilter === 'week') { const diffDays = (now - d) / (1000 * 60 * 60 * 24); dateMatch = diffDays <= 7 && diffDays >= 0; }
+                        if (timeFilter === 'month') {
+                            dateMatch = (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear());
+                        } else if (timeFilter === 'week') {
+                            const diffDays = (now - d) / (1000 * 60 * 60 * 24);
+                            dateMatch = diffDays <= 7 && diffDays >= 0;
+                        }
                     }
                 }
                 return dateMatch && (!sangkat || f.sangkat === sangkat) && (!phanek || f.phanek === phanek) && (!plate || f.plate === plate);
@@ -434,12 +455,13 @@
             currentFuelPage = page;
             const tbody = document.getElementById('fuel-table-body');
             const paginationDiv = document.getElementById('fuel-pagination');
-            if (!tbody) return; // ป้องกัน Error ถ้าปิดหน้าก่อน
+            if (!tbody) return; 
             
             tbody.innerHTML = ''; paginationDiv.innerHTML = '';
 
             if(currentFilteredFuels.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">ไม่มีข้อมูลประวัติการเติมน้ำมัน</td></tr>`; return;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">ไม่มีข้อมูลประวัติการเติมน้ำมัน</td></tr>`;
+                return;
             }
 
             const start = (page - 1) * FUEL_ITEMS_PER_PAGE;
@@ -455,7 +477,6 @@
                 if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-image"></i> ยพ.</a>`;
                 if(!docHtml) docHtml = '-';
 
-                // ปุ่มจัดการ (ถ้าตั้งหนี้แล้ว จะโชว์แค่ปุ่ม แก้ไข/ลบ)
                 let actionHtml = `<button class="btn btn-warning btn-sm" onclick="openFuelModal('edit', '${f.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteFuel('${f.id}')"><i class="fas fa-trash"></i></button>`;
                 if (!f.isDebt) actionHtml = `<button class="btn btn-success btn-sm" style="margin-bottom: 4px;" onclick="markDebt('${f.id}')"><i class="fas fa-check-circle"></i> ตั้งหนี้</button><br>` + actionHtml;
 
@@ -469,7 +490,6 @@
                 </tr>`;
             });
 
-            // Render Pagination Buttons
             const totalPages = Math.ceil(currentFilteredFuels.length / FUEL_ITEMS_PER_PAGE);
             if(totalPages > 1) {
                 for(let i = 1; i <= totalPages; i++) {
@@ -492,23 +512,31 @@
         // --- ระบบ Form เติมน้ำมัน ---
         function openFuelModal(mode, id = null) {
             document.getElementById('fuelModal').style.display = 'flex';
-            
             const selectSangkat = document.getElementById('fuel-sangkat');
+            
+            const uniqueSangkat = [...new Set(currentCarsList.map(c => c.sangkat))];
             selectSangkat.innerHTML = '<option value="">- เลือกสังกัด -</option>';
-            [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => selectSangkat.add(new Option(s, s)));
+            uniqueSangkat.forEach(s => selectSangkat.add(new Option(s, s)));
 
             if(mode === 'add') {
                 document.getElementById('fuelModalTitle').innerText = 'บันทึกข้อมูลเติมน้ำมัน';
                 document.getElementById('fuel-id').value = '';
+                
+                // ซ่อนปุ่มตั้งหนี้ในโหมดเพิ่มใหม่
+                document.getElementById('fuel-debt-container').style.display = 'none';
+
                 ['fuel-sangkat','fuel-phanek','fuel-plate','fuel-brand','fuel-type','fuel-mile','fuel-type-oil','fuel-station','fuel-tax-invoice','fuel-price','fuel-quantity','fuel-total','fuel-book','fuel-no','fuel-network','fuel-wbs'].forEach(el => document.getElementById(el).value = '');
                 document.getElementById('fuel-subtotal').innerText = '0.00'; document.getElementById('fuel-vat').innerText = '0.00';
                 document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = '';
                 document.getElementById('fuel-is-debt').checked = false; 
                 
-                // บังคับรูปตอนเพิ่มใหม่
                 document.getElementById('req-receipt').innerHTML = '* บังคับ'; document.getElementById('req-yp').innerHTML = '* บังคับ';
             } else if (id) {
                 document.getElementById('fuelModalTitle').innerText = 'แก้ไขรายการเติมน้ำมัน';
+                
+                // แสดงปุ่มตั้งหนี้ในโหมดแก้ไข
+                document.getElementById('fuel-debt-container').style.display = 'flex';
+
                 const f = currentFuelsList.find(item => item.id === id);
                 if(f) {
                     document.getElementById('fuel-id').value = f.id; document.getElementById('fuel-is-debt').checked = f.isDebt;
@@ -524,7 +552,6 @@
                     document.getElementById('fuel-network').value = f.network; document.getElementById('fuel-wbs').value = f.wbs;
                     
                     document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = '';
-                    // ตอนแก้ไขรูปไม่บังคับ
                     document.getElementById('req-receipt').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; document.getElementById('req-yp').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)';
                 }
             }
@@ -563,30 +590,56 @@
             document.getElementById('fuel-vat').innerText = vat.toFixed(2);
         }
 
+        // --- ฟังก์ชัน Submit แจ้ง Popup ข้อมูลเต็มรูปแบบก่อนส่ง ---
         async function submitFuel() {
             const id = document.getElementById('fuel-id').value;
             const isDebt = document.getElementById('fuel-is-debt').checked; 
+            const sangkat = document.getElementById('fuel-sangkat').value;
+            const phanek = document.getElementById('fuel-phanek').value;
             const plate = document.getElementById('fuel-plate').value;
-            
-            // เช็คว่าบังคับอัปโหลดภาพมั้ย (ถ้า id ว่าง = เพิ่มใหม่ ต้องบังคับ)
+            const brand = document.getElementById('fuel-brand').value;
+            const type = document.getElementById('fuel-type').value;
+            const mile = document.getElementById('fuel-mile').value;
+            const fuelType = document.getElementById('fuel-type-oil').value;
+            const station = document.getElementById('fuel-station').value;
+            const taxInvoice = document.getElementById('fuel-tax-invoice').value;
+            const price = document.getElementById('fuel-price').value;
+            const quantity = document.getElementById('fuel-quantity').value;
+            const totalAmount = document.getElementById('fuel-total').value;
+            const subtotal = document.getElementById('fuel-subtotal').innerText;
+            const vat = document.getElementById('fuel-vat').innerText;
+            const book = document.getElementById('fuel-book').value;
+            const docNo = document.getElementById('fuel-no').value;
+            const network = document.getElementById('fuel-network').value;
+            const wbs = document.getElementById('fuel-wbs').value;
+
             const receiptFile = document.getElementById('fuel-img-receipt').files[0];
             const ypFile = document.getElementById('fuel-img-yp').files[0];
+            
             if (!id && (!receiptFile || !ypFile)) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลด "รูปใบเสร็จ" และ "รูป ยพ." ให้ครบถ้วน', 'warning');
             if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning');
 
+            // 1. Popup ยืนยันข้อมูลแบบเต็มแม็กซ์
             const confirmResult = await Swal.fire({
                 title: 'ตรวจสอบข้อมูลก่อนบันทึก',
                 html: `
                     <div style="text-align: left; font-size: 14px; background: #F9FAFB; padding: 15px; border-radius: 8px; max-height: 50vh; overflow-y: auto; border: 1px solid #E5E7EB;">
-                        <div style="margin-bottom: 10px; color: ${isDebt ? '#065F46' : '#6B7280'}; font-weight:bold;">
+                        <div style="margin-bottom: 10px; color: ${isDebt ? '#065F46' : '#6B7280'}; font-weight:bold; display: ${id ? 'block' : 'none'};">
                             <i class="fas ${isDebt ? 'fa-check-circle' : 'fa-times-circle'}"></i> สถานะ: ${isDebt ? 'ตั้งหนี้แล้ว' : 'ยังไม่ตั้งหนี้'}
                         </div>
-                        <p style="margin-bottom: 5px;"><b>รถยนต์:</b> ${plate}</p>
+                        <p style="margin-bottom: 5px;"><b>รถยนต์:</b> ${plate} (${brand} ${type})</p>
+                        <p style="margin-bottom: 5px;"><b>สังกัด/แผนก:</b> ${sangkat || '-'} / ${phanek || '-'}</p>
+                        <p style="margin-bottom: 5px;"><b>เลขไมล์:</b> ${mile || '-'}</p>
                         <hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;">
-                        <p style="margin-bottom: 5px;"><b>สถานีบริการ:</b> ${document.getElementById('fuel-station').value || '-'}</p>
-                        <p style="margin-bottom: 5px;"><b>ปริมาณ:</b> ${document.getElementById('fuel-quantity').value || 0} ลิตร</p>
+                        <p style="margin-bottom: 5px;"><b>สถานีบริการ:</b> ${station || '-'} (บิล: ${taxInvoice || '-'})</p>
+                        <p style="margin-bottom: 5px;"><b>เล่มที่/เลขที่:</b> ${book || '-'} / ${docNo || '-'}</p>
+                        <p style="margin-bottom: 5px;"><b>เชื้อเพลิง:</b> ${fuelType || '-'}</p>
+                        <p style="margin-bottom: 5px;"><b>ปริมาณ:</b> ${quantity || 0} ลิตร (ราคา ฿${price || 0}/ลิตร)</p>
+                        <p style="margin-bottom: 5px;"><b>โครงข่าย/WBS:</b> ${network || '-'} / ${wbs || '-'}</p>
                         <hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;">
-                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 16px;"><b>ยอดชำระรวม:</b> <b style="color:var(--danger);">฿${document.getElementById('fuel-total').value || '0.00'}</b></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>มูลค่าสินค้า:</span> <span>฿${subtotal}</span></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>VAT 7%:</span> <span>฿${vat}</span></div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 16px;"><b>ยอดชำระรวม:</b> <b style="color:var(--danger);">฿${totalAmount || '0.00'}</b></div>
                     </div>
                 `,
                 icon: 'info', showCancelButton: true, confirmButtonColor: '#10B981', cancelButtonColor: '#6B7280', confirmButtonText: '<i class="fas fa-check"></i> ยืนยันการบันทึก', cancelButtonText: 'กลับไปแก้ไข'
@@ -597,14 +650,13 @@
             document.getElementById('submitFuelBtn').disabled = true; 
             document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบีบอัดภาพและบันทึก...';
 
-            // บีบอัดรูปภาพก่อนส่ง
             const receiptB64 = await compressImage(receiptFile);
             const ypB64 = await compressImage(ypFile);
             const user = JSON.parse(localStorage.getItem('user_session'));
 
             const payload = { 
                 action: id ? 'edit_fuel' : 'add_fuel', id: id,
-                empName: user.name, sangkat: document.getElementById('fuel-sangkat').value, phanek: document.getElementById('fuel-phanek').value, plate: plate, mile: document.getElementById('fuel-mile').value, fuelType: document.getElementById('fuel-type-oil').value, station: document.getElementById('fuel-station').value, taxInvoice: document.getElementById('fuel-tax-invoice').value, price: document.getElementById('fuel-price').value, quantity: document.getElementById('fuel-quantity').value, totalAmount: document.getElementById('fuel-total').value, bookNo: document.getElementById('fuel-book').value, docNo: document.getElementById('fuel-no').value, network: document.getElementById('fuel-network').value, wbs: document.getElementById('fuel-wbs').value, isDebt: isDebt, 
+                empName: user.name, sangkat: sangkat, phanek: phanek, plate: plate, mile: mile, fuelType: fuelType, station: station, taxInvoice: taxInvoice, price: price, quantity: quantity, totalAmount: totalAmount, bookNo: book, docNo: docNo, network: network, wbs: wbs, isDebt: isDebt, 
                 receiptBase64: receiptB64, receiptName: receiptFile ? receiptFile.name : '',
                 ypBase64: ypB64, ypName: ypFile ? ypFile.name : ''
             };
