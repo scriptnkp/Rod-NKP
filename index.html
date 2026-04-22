@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (Add Debt Filter)      -->
+<!-- Role: Frontend Full (Table Layout & WBS added) -->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -56,9 +56,9 @@
         .use-card-detail { font-size: 14px; color: var(--text-light); margin-bottom: 6px; }
 
         .table-container { background: var(--surface); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; width: 100%; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 950px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1050px; } /* ขยายตารางให้กว้างขึ้นรองรับข้อมูลใหม่ */
         th { background-color: #F3F4F6; color: var(--text-light); font-size: 13px; font-weight: 600; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-        td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
 
         .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
         .page-btn { padding: 8px 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: 500; }
@@ -160,7 +160,6 @@
             <div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div>
             <input type="hidden" id="fuel-id">
             
-            <!-- ส่วนตั้งหนี้ ซ่อนเมื่อเพิ่มใหม่ แสดงเมื่อแก้ไข -->
             <div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;">
                 <input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;">
                 <label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label>
@@ -377,8 +376,17 @@
                 </div>
                 <div id="fuel-table-loader" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
                 <div class="table-container hidden" id="fuel-table-wrapper">
-                    <table>
-                        <thead><tr><th>วันที่</th><th>ผู้เติม/สังกัด</th><th>รถยนต์</th><th>สถานี/ยอดชำระ</th><th style="text-align:center;">เอกสาร</th><th style="text-align:center;">จัดการ</th></tr></thead>
+                    <table style="table-layout: fixed; width: 100%; min-width: 1050px;">
+                        <thead>
+                            <tr>
+                                <th style="width: 130px;">วันที่</th>
+                                <th style="width: 180px;">ผู้เติม/สังกัด</th>
+                                <th style="width: 150px;">รถยนต์</th>
+                                <th>รายละเอียดการเติม / WBS</th>
+                                <th style="width: 90px; text-align:center;">เอกสาร</th>
+                                <th style="width: 120px; text-align:center;">จัดการ</th>
+                            </tr>
+                        </thead>
                         <tbody id="fuel-table-body"></tbody>
                     </table>
                     <div id="fuel-pagination" class="pagination"></div>
@@ -487,20 +495,27 @@
                 const debtBadge = f.isDebt ? `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว</span>` : `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
                 
                 let docHtml = '';
-                if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px;"><i class="fas fa-image"></i> บิล</a><br>`;
-                if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-image"></i> ยพ.</a>`;
+                if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px;"><i class="fas fa-image"></i> บิล</a><br>`;
+                if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding: 4px 8px;"><i class="fas fa-image"></i> ยพ.</a>`;
                 if(!docHtml) docHtml = '-';
 
-                let actionHtml = `<button class="btn btn-warning btn-sm" onclick="openFuelModal('edit', '${f.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteFuel('${f.id}')"><i class="fas fa-trash"></i></button>`;
-                if (!f.isDebt) actionHtml = `<button class="btn btn-success btn-sm" style="margin-bottom: 4px;" onclick="markDebt('${f.id}')"><i class="fas fa-check-circle"></i> ตั้งหนี้</button><br>` + actionHtml;
+                let actionHtml = `<button class="btn btn-warning btn-sm" style="padding: 6px 10px;" onclick="openFuelModal('edit', '${f.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" style="padding: 6px 10px;" onclick="deleteFuel('${f.id}')"><i class="fas fa-trash"></i></button>`;
+                if (!f.isDebt) actionHtml = `<button class="btn btn-success btn-sm" style="margin-bottom: 4px; width: 100%;" onclick="markDebt('${f.id}')"><i class="fas fa-check-circle"></i> ตั้งหนี้</button><br>` + actionHtml;
 
                 tbody.innerHTML += `<tr>
                     <td style="font-size: 13px; color: var(--text-light);">${formattedDate}</td>
                     <td><b>${f.empName}</b><br><span style="font-size:12px; color:var(--text-light);">${f.sangkat} - ${f.phanek}</span></td>
                     <td><span style="font-weight: 500; color: var(--primary);">${f.plate}</span><br>${debtBadge}</td>
-                    <td>${f.station} (INV: ${f.taxInvoice})<br><span style="font-weight: 600; color: var(--danger);">฿${f.totalAmount}</span></td>
-                    <td style="text-align:center; min-width: 80px;">${docHtml}</td>
-                    <td style="text-align:center; min-width: 100px;">${actionHtml}</td>
+                    <td>
+                        <div style="line-height: 1.5;">
+                            <span style="color: var(--text);"><b>ปั๊ม:</b> ${f.station || '-'}</span><br>
+                            <span style="font-size:12px; color:var(--text-light);"><b>ใบกำกับภาษี:</b> ${f.taxInvoice || '-'}</span><br>
+                            <span style="font-size:12px; color:var(--text-light);"><b>WBS:</b> ${f.wbs || '-'} &nbsp;|&nbsp; <b>โครงข่าย:</b> ${f.network || '-'}</span><br>
+                            <span style="font-weight: 600; color: var(--danger);">ยอดชำระ: ฿${f.totalAmount}</span>
+                        </div>
+                    </td>
+                    <td style="text-align:center;">${docHtml}</td>
+                    <td style="text-align:center;">${actionHtml}</td>
                 </tr>`;
             });
 
@@ -629,7 +644,6 @@
             const receiptFile = document.getElementById('fuel-img-receipt').files[0];
             const ypFile = document.getElementById('fuel-img-yp').files[0];
             
-            // เช็คว่าถ้าเป็นการเพิ่มใหม่ ต้องบังคับแนบรูป
             if (!id && (!receiptFile || !ypFile)) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลด "รูปใบเสร็จ" และ "รูป ยพ." ให้ครบถ้วน', 'warning');
             if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning');
 
