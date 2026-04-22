@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (Hide Debt on Add, Full Popup Summary) -->
+<!-- Role: Frontend Full (Add Debt Filter)      -->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -348,7 +348,7 @@
         }
 
         // ==========================================
-        // PAGE: FUEL DASHBOARD (ประวัติน้ำมัน)
+        // PAGE: FUEL DASHBOARD (ประวัติน้ำมัน + Filter + Pagination)
         // ==========================================
         async function renderFuelDashboard(container) {
             container.innerHTML = `
@@ -360,6 +360,13 @@
                                 <option value="month" selected>📌 เฉพาะเดือนปัจจุบัน</option>
                                 <option value="week">📅 7 วันล่าสุด</option>
                                 <option value="all">📂 ดูทั้งหมด</option>
+                            </select>
+                        </div>
+                        <div class="input-group flex-col">
+                            <select id="filter-fuel-debt" onchange="filterFuelTable()">
+                                <option value="all" selected>- ทุกสถานะตั้งหนี้ -</option>
+                                <option value="pending">⏳ ยังไม่ตั้งหนี้</option>
+                                <option value="completed">✅ ตั้งหนี้แล้ว</option>
                             </select>
                         </div>
                         <div class="input-group flex-col"><select id="filter-fuel-sangkat" onchange="updateFilterFuelPhanek()"><option value="">- ทุกสังกัด -</option></select></div>
@@ -419,10 +426,12 @@
             const pEl = document.getElementById('filter-fuel-phanek');
             const plEl = document.getElementById('filter-fuel-plate');
             const tEl = document.getElementById('filter-fuel-time');
+            const dEl = document.getElementById('filter-fuel-debt');
 
-            if(!sEl || !pEl || !plEl || !tEl) return;
+            if(!sEl || !pEl || !plEl || !tEl || !dEl) return;
 
             const timeFilter = tEl.value;
+            const debtFilter = dEl.value;
             const sangkat = sEl.value; const phanek = pEl.value; const plate = plEl.value;
             const now = new Date();
 
@@ -443,7 +452,12 @@
                         }
                     }
                 }
-                return dateMatch && (!sangkat || f.sangkat === sangkat) && (!phanek || f.phanek === phanek) && (!plate || f.plate === plate);
+                
+                let debtMatch = true;
+                if (debtFilter === 'pending') debtMatch = !f.isDebt;
+                else if (debtFilter === 'completed') debtMatch = f.isDebt;
+
+                return dateMatch && debtMatch && (!sangkat || f.sangkat === sangkat) && (!phanek || f.phanek === phanek) && (!plate || f.plate === plate);
             });
 
             const loader = document.getElementById('fuel-table-loader'); const wrapper = document.getElementById('fuel-table-wrapper');
@@ -590,7 +604,6 @@
             document.getElementById('fuel-vat').innerText = vat.toFixed(2);
         }
 
-        // --- ฟังก์ชัน Submit แจ้ง Popup ข้อมูลเต็มรูปแบบก่อนส่ง ---
         async function submitFuel() {
             const id = document.getElementById('fuel-id').value;
             const isDebt = document.getElementById('fuel-is-debt').checked; 
@@ -616,10 +629,10 @@
             const receiptFile = document.getElementById('fuel-img-receipt').files[0];
             const ypFile = document.getElementById('fuel-img-yp').files[0];
             
+            // เช็คว่าถ้าเป็นการเพิ่มใหม่ ต้องบังคับแนบรูป
             if (!id && (!receiptFile || !ypFile)) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลด "รูปใบเสร็จ" และ "รูป ยพ." ให้ครบถ้วน', 'warning');
             if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning');
 
-            // 1. Popup ยืนยันข้อมูลแบบเต็มแม็กซ์
             const confirmResult = await Swal.fire({
                 title: 'ตรวจสอบข้อมูลก่อนบันทึก',
                 html: `
