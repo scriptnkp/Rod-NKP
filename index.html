@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (100% COMPLETE)        -->
+<!-- Role: Frontend Full (FIX CORS + Popup Check) -->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -227,6 +227,21 @@
         let currentCarsList = []; 
         let currentFuelsList = [];
 
+        // ฟังก์ชันหลักที่แก้ไขเรื่อง CORS 100% (บังคับใส่ Header text/plain ให้ทุกการเชื่อมต่อ)
+        async function apiCall(payload) {
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                return await response.json();
+            } catch(e) {
+                console.error("API Call Error:", e);
+                throw e;
+            }
+        }
+
         window.onload = function() {
             const savedUser = localStorage.getItem('user_session');
             if(savedUser) {
@@ -245,8 +260,7 @@
             document.getElementById('loginBtn').disabled = true; document.getElementById('login-loader').style.display = 'block';
 
             try {
-                const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'login', empId: empId }) });
-                const result = await response.json();
+                const result = await apiCall({ action: 'login', empId: empId });
                 if(result.status === 'success') {
                     localStorage.setItem('user_session', JSON.stringify(result.data));
                     renderDashboard(result.data);
@@ -273,8 +287,7 @@
 
         async function fetchCarsData() {
             try {
-                const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'get_cars' }) });
-                const result = await response.json();
+                const result = await apiCall({ action: 'get_cars' });
                 if(result.status === 'success') currentCarsList = result.data;
             } catch(e) {}
         }
@@ -347,22 +360,21 @@
 
         async function fetchFuelsData() {
             try {
-                const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'get_fuels' }) });
-                const result = await response.json();
+                const result = await apiCall({ action: 'get_fuels' });
                 if(result.status === 'success') currentFuelsList = result.data;
             } catch(e) {}
         }
 
         function filterFuelTable() {
-            const sangkatEl = document.getElementById('filter-fuel-sangkat');
-            const phanekEl = document.getElementById('filter-fuel-phanek');
-            const plateEl = document.getElementById('filter-fuel-plate');
+            const sEl = document.getElementById('filter-fuel-sangkat');
+            const pEl = document.getElementById('filter-fuel-phanek');
+            const plEl = document.getElementById('filter-fuel-plate');
 
-            if (!sangkatEl || !phanekEl || !plateEl) return;
+            if(!sEl || !pEl || !plEl) return;
 
-            const sangkat = sangkatEl.value;
-            const phanek = phanekEl.value;
-            const plate = plateEl.value;
+            const sangkat = sEl.value;
+            const phanek = pEl.value;
+            const plate = plEl.value;
 
             const filtered = currentFuelsList.filter(f => {
                 return (!sangkat || f.sangkat === sangkat) && (!phanek || f.phanek === phanek) && (!plate || f.plate === plate);
@@ -477,9 +489,7 @@
             document.getElementById('fuel-vat').innerText = vat.toFixed(2);
         }
 
-        // ==========================================
-        // แจ้ง Popup ให้น่าเชื่อถือ (แสดงทุกช่องที่กรอก) ก่อน Submit
-        // ==========================================
+        // --- เพิ่ม POPUP ยืนยันข้อมูลทุกช่องก่อนบันทึก ---
         async function submitFuel() {
             const id = document.getElementById('fuel-id').value;
             const sangkat = document.getElementById('fuel-sangkat').value;
@@ -503,7 +513,7 @@
 
             if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning');
 
-            // 1. Popup ยืนยันข้อมูลก่อนบันทึก (โชว์ทุกอย่างที่กรอก)
+            // 1. Popup ยืนยันข้อมูลแบบเต็มสตรีม
             const confirmResult = await Swal.fire({
                 title: 'ตรวจสอบข้อมูลก่อนบันทึก',
                 html: `
@@ -548,7 +558,7 @@
             };
 
             try {
-                const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+                const res = await apiCall(payload);
                 if(res.status === 'success') { 
                     Swal.fire('สำเร็จ', res.message, 'success'); 
                     document.getElementById('fuelModal').style.display = 'none'; 
@@ -558,7 +568,7 @@
                     Swal.fire('ผิดพลาด', res.message, 'error');
                 }
             } catch(e) { 
-                Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ (อย่าลืมเปิดผ่าน Localhost หรืออัพขึ้น Github นะครับ!)', 'error'); 
+                Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ (โปรดตรวจสอบการตั้งค่า Github หรือ Internet)', 'error'); 
             } finally { 
                 document.getElementById('submitFuelBtn').disabled = false; 
                 document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล'; 
@@ -569,7 +579,7 @@
             Swal.fire({ title: 'ลบรายการ?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'ลบเลย!' }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_fuel', id: id }) }).then(r => r.json());
+                        const res = await apiCall({ action: 'delete_fuel', id: id });
                         if(res.status === 'success') { Swal.fire('ลบแล้ว', '', 'success'); await fetchFuelsData(); filterFuelTable(); }
                     } catch(e) { Swal.fire('ผิดพลาด', 'ไม่สามารถลบได้', 'error'); }
                 }
@@ -585,22 +595,22 @@
         }
         function updateInsPhanek() { const val = document.getElementById('ins-sangkat').value; const select = document.getElementById('ins-phanek'); select.innerHTML = '<option value="">- เลือกแผนก -</option>'; document.getElementById('ins-plate').innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; if(val) [...new Set(currentCarsList.filter(c => c.sangkat === val).map(c => c.phanek))].forEach(p => select.add(new Option(p, p))); }
         function updateInsPlate() { const s = document.getElementById('ins-sangkat').value; const p = document.getElementById('ins-phanek').value; const select = document.getElementById('ins-plate'); select.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => select.add(new Option(c.plate, c.plate))); }
-        async function submitInspection() { const plate = document.getElementById('ins-plate').value; if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); document.getElementById('submitInsBtn').disabled = true; document.getElementById('submitInsBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; let base64String = await fileToBase64(document.getElementById('ins-image').files[0]); const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_inspection', empName: user.name, sangkat: document.getElementById('ins-sangkat').value, phanek: document.getElementById('ins-phanek').value, plate: plate, c_light: document.getElementById('check-1').value, c_tire: document.getElementById('check-2').value, c_fluid: document.getElementById('check-3').value, c_battery: document.getElementById('check-4').value, c_brake: document.getElementById('check-5').value, c_clean: document.getElementById('check-6').value, note: document.getElementById('ins-note').value, imageBase64: base64String }; try { const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json()); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); loadPage('check'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('submitInsBtn').disabled = false; document.getElementById('submitInsBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกตรวจสภาพ'; } }
+        async function submitInspection() { const plate = document.getElementById('ins-plate').value; if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); document.getElementById('submitInsBtn').disabled = true; document.getElementById('submitInsBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; let base64String = await fileToBase64(document.getElementById('ins-image').files[0]); const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_inspection', empName: user.name, sangkat: document.getElementById('ins-sangkat').value, phanek: document.getElementById('ins-phanek').value, plate: plate, c_light: document.getElementById('check-1').value, c_tire: document.getElementById('check-2').value, c_fluid: document.getElementById('check-3').value, c_battery: document.getElementById('check-4').value, c_brake: document.getElementById('check-5').value, c_clean: document.getElementById('check-6').value, note: document.getElementById('ins-note').value, imageBase64: base64String }; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); loadPage('check'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('submitInsBtn').disabled = false; document.getElementById('submitInsBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกตรวจสภาพ'; } }
 
         function renderUsePage(container) { container.innerHTML = `<div class="page-title" style="color: var(--primary);"><i class="fas fa-car"></i> ขอใช้งานรถยนต์</div><div class="form-box"><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="use-sangkat" onchange="updateUsePhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="use-phanek" onchange="updateUsePlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ</label><select id="use-plate" onchange="autoFillUseCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="use-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="use-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="input-group"><label>เลขไมล์ก่อนใช้งาน</label><input type="number" id="use-startMile"></div><div class="input-group"><label>สถานที่ (จุดหมายปลายทาง)</label><input type="text" id="use-location"></div><button class="btn" style="width:100%; padding: 14px; margin-top:15px; font-size:16px;" id="submitUseBtn" onclick="submitUseCar()"><i class="fas fa-paper-plane"></i> ยืนยันการขอใช้รถ</button></div>`; const select = document.getElementById('use-sangkat'); [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => select.add(new Option(s, s))); }
         function updateUsePhanek() { const val = document.getElementById('use-sangkat').value; const select = document.getElementById('use-phanek'); select.innerHTML = '<option value="">- เลือกแผนก -</option>'; document.getElementById('use-plate').innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('use-brand').value = ''; document.getElementById('use-type').value = ''; if(val) [...new Set(currentCarsList.filter(c => c.sangkat === val).map(c => c.phanek))].forEach(p => select.add(new Option(p, p))); }
         function updateUsePlate() { const s = document.getElementById('use-sangkat').value; const p = document.getElementById('use-phanek').value; const select = document.getElementById('use-plate'); select.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('use-brand').value = ''; document.getElementById('use-type').value = ''; if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => select.add(new Option(c.plate, c.plate))); }
         function autoFillUseCarDetails() { const plate = document.getElementById('use-plate').value; const car = currentCarsList.find(c => c.plate === plate); document.getElementById('use-brand').value = car ? car.brand : ''; document.getElementById('use-type').value = car ? car.type : ''; }
-        async function submitUseCar() { const plate = document.getElementById('use-plate').value; const startMile = document.getElementById('use-startMile').value; const location = document.getElementById('use-location').value; if(!plate || !startMile || !location) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning'); document.getElementById('submitUseBtn').disabled = true; document.getElementById('submitUseBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_use_car', empName: user.name, sangkat: document.getElementById('use-sangkat').value, phanek: document.getElementById('use-phanek').value, plate: plate, brand: document.getElementById('use-brand').value, type: document.getElementById('use-type').value, startMile: startMile, location: location }; try { const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json()); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); loadPage('use'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('submitUseBtn').disabled = false; document.getElementById('submitUseBtn').innerHTML = '<i class="fas fa-paper-plane"></i> ยืนยันการขอใช้รถ'; } }
+        async function submitUseCar() { const plate = document.getElementById('use-plate').value; const startMile = document.getElementById('use-startMile').value; const location = document.getElementById('use-location').value; if(!plate || !startMile || !location) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning'); document.getElementById('submitUseBtn').disabled = true; document.getElementById('submitUseBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_use_car', empName: user.name, sangkat: document.getElementById('use-sangkat').value, phanek: document.getElementById('use-phanek').value, plate: plate, brand: document.getElementById('use-brand').value, type: document.getElementById('use-type').value, startMile: startMile, location: location }; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); loadPage('use'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('submitUseBtn').disabled = false; document.getElementById('submitUseBtn').innerHTML = '<i class="fas fa-paper-plane"></i> ยืนยันการขอใช้รถ'; } }
 
-        async function renderReturnPage(container) { container.innerHTML = `<div class="page-title" style="color: var(--warning);"><i class="fas fa-undo"></i> รถที่อยู่ระหว่างการใช้งาน</div><div id="active-list-loader" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div><div class="card-grid" id="active-use-container"></div>`; try { const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'get_active_uses' }) }).then(r => r.json()); document.getElementById('active-list-loader').style.display = 'none'; const grid = document.getElementById('active-use-container'); if(res.data.length === 0) { grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 30px; background:white; border-radius:12px;">ไม่มีรถที่กำลังใช้งานอยู่</div>`; return; } res.data.forEach(use => { grid.innerHTML += `<div class="use-card"><div class="use-card-header"><div class="use-card-plate"><i class="fas fa-car-side"></i> ${use.plate}</div><div class="use-card-badge">กำลังใช้งาน</div></div><div class="use-card-detail"><strong>ผู้เบิก:</strong> ${use.empName}</div><div class="use-card-detail"><strong>สถานที่:</strong> ${use.location}</div><div class="use-card-detail" style="margin-bottom: 15px;"><strong>ไมล์เริ่มต้น:</strong> ${use.startMile}</div><button class="btn btn-warning" style="width:100%;" onclick="openReturnModal('${use.useId}', '${use.plate}', '${use.startMile}')"><i class="fas fa-key"></i> ดำเนินการคืนรถ</button></div>`; }); } catch (error) { document.getElementById('active-list-loader').innerHTML = `<span style="color:red;">โหลดข้อมูลไม่สำเร็จ</span>`; } }
+        async function renderReturnPage(container) { container.innerHTML = `<div class="page-title" style="color: var(--warning);"><i class="fas fa-undo"></i> รถที่อยู่ระหว่างการใช้งาน</div><div id="active-list-loader" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div><div class="card-grid" id="active-use-container"></div>`; try { const res = await apiCall({ action: 'get_active_uses' }); document.getElementById('active-list-loader').style.display = 'none'; const grid = document.getElementById('active-use-container'); if(res.data.length === 0) { grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 30px; background:white; border-radius:12px;">ไม่มีรถที่กำลังใช้งานอยู่</div>`; return; } res.data.forEach(use => { grid.innerHTML += `<div class="use-card"><div class="use-card-header"><div class="use-card-plate"><i class="fas fa-car-side"></i> ${use.plate}</div><div class="use-card-badge">กำลังใช้งาน</div></div><div class="use-card-detail"><strong>ผู้เบิก:</strong> ${use.empName}</div><div class="use-card-detail"><strong>สถานที่:</strong> ${use.location}</div><div class="use-card-detail" style="margin-bottom: 15px;"><strong>ไมล์เริ่มต้น:</strong> ${use.startMile}</div><button class="btn btn-warning" style="width:100%;" onclick="openReturnModal('${use.useId}', '${use.plate}', '${use.startMile}')"><i class="fas fa-key"></i> ดำเนินการคืนรถ</button></div>`; }); } catch (error) { document.getElementById('active-list-loader').innerHTML = `<span style="color:red;">โหลดข้อมูลไม่สำเร็จ</span>`; } }
         function openReturnModal(useId, plate, startMile) { document.getElementById('returnModal').style.display = 'flex'; document.getElementById('return-useId').value = useId; document.getElementById('return-display-plate').innerHTML = `<i class="fas fa-car"></i> ทะเบียน: ${plate}`; document.getElementById('return-display-startMile').innerText = `ไมล์ก่อนเดินทาง: ${startMile}`; document.getElementById('return-endMile').value = ''; }
-        async function submitReturn() { const endMile = document.getElementById('return-endMile').value; if(!endMile) return Swal.fire('แจ้งเตือน', 'กรุณาระบุเลขไมล์ล่าสุด', 'warning'); document.getElementById('submitReturnBtn').disabled = true; document.getElementById('submitReturnBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_return_car', useId: document.getElementById('return-useId').value, endMile: endMile, empName: user.name }; try { const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json()); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('returnModal').style.display = 'none'; loadPage('return'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('submitReturnBtn').disabled = false; document.getElementById('submitReturnBtn').innerHTML = 'ยืนยันการคืนรถ'; } }
+        async function submitReturn() { const endMile = document.getElementById('return-endMile').value; if(!endMile) return Swal.fire('แจ้งเตือน', 'กรุณาระบุเลขไมล์ล่าสุด', 'warning'); document.getElementById('submitReturnBtn').disabled = true; document.getElementById('submitReturnBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_return_car', useId: document.getElementById('return-useId').value, endMile: endMile, empName: user.name }; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('returnModal').style.display = 'none'; loadPage('return'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('submitReturnBtn').disabled = false; document.getElementById('submitReturnBtn').innerHTML = 'ยืนยันการคืนรถ'; } }
 
         function renderAdminCarPage(container) { container.innerHTML = `<div class="page-header"><h2 class="page-title"><i class="fas fa-database text-primary"></i> ฐานข้อมูลรถยนต์</h2><button class="btn" onclick="openCarModal('add')"><i class="fas fa-plus"></i> เพิ่มรถใหม่</button></div><div class="table-container"><table><thead><tr><th>สังกัด/แผนก</th><th>ทะเบียนรถ</th><th>ยี่ห้อ</th><th>ประเภท</th><th style="text-align:center;">จัดการ</th></tr></thead><tbody id="admin-table-body"></tbody></table></div>`; const tbody = document.getElementById('admin-table-body'); if(currentCarsList.length === 0) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">ไม่มีข้อมูล</td></tr>`; currentCarsList.forEach(car => { tbody.innerHTML += `<tr><td><b>${car.sangkat}</b><br><span style="font-size:12px; color:var(--text-light);">${car.phanek}</span></td><td style="font-weight: 500;">${car.plate}</td><td>${car.brand}</td><td>${car.type}</td><td style="text-align:center;"><button class="btn btn-warning" style="padding: 6px 10px;" onclick="openCarModal('edit', '${car.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger" style="padding: 6px 10px;" onclick="deleteCar('${car.id}')"><i class="fas fa-trash"></i></button></td></tr>`; }); }
         function openCarModal(mode, id = null) { document.getElementById('carModal').style.display = 'flex'; if(mode === 'add') { document.getElementById('modalTitle').innerText = 'เพิ่มรถใหม่'; document.getElementById('carId').value = ''; ['carSangkat','carPhanek','carPlate','carBrand','carType'].forEach(el => document.getElementById(el).value = ''); } else if (id) { document.getElementById('modalTitle').innerText = 'แก้ไขรถ'; const car = currentCarsList.find(c => c.id === id); if(car) { document.getElementById('carId').value = car.id; document.getElementById('carSangkat').value = car.sangkat; document.getElementById('carPhanek').value = car.phanek; document.getElementById('carPlate').value = car.plate; document.getElementById('carBrand').value = car.brand; document.getElementById('carType').value = car.type; } } }
-        async function saveCar() { const id = document.getElementById('carId').value; const payload = { action: id ? 'edit_car' : 'add_car', id: id, sangkat: document.getElementById('carSangkat').value, phanek: document.getElementById('carPhanek').value, plate: document.getElementById('carPlate').value, brand: document.getElementById('carBrand').value, type: document.getElementById('carType').value }; document.getElementById('saveCarBtn').disabled = true; try { const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json()); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('carModal').style.display = 'none'; await fetchCarsData(); loadPage('car-settings'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('saveCarBtn').disabled = false; } }
-        function deleteCar(id) { Swal.fire({ title: 'ลบข้อมูล?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'ลบเลย!' }).then(async (result) => { if (result.isConfirmed) { try { const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_car', id: id }) }).then(r => r.json()); if(res.status === 'success') { Swal.fire('ลบแล้ว', '', 'success'); await fetchCarsData(); loadPage('car-settings'); } } catch(e) { Swal.fire('ผิดพลาด', 'ไม่สามารถลบได้', 'error'); } } }); }
+        async function saveCar() { const id = document.getElementById('carId').value; const payload = { action: id ? 'edit_car' : 'add_car', id: id, sangkat: document.getElementById('carSangkat').value, phanek: document.getElementById('carPhanek').value, plate: document.getElementById('carPlate').value, brand: document.getElementById('carBrand').value, type: document.getElementById('carType').value }; document.getElementById('saveCarBtn').disabled = true; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('carModal').style.display = 'none'; await fetchCarsData(); loadPage('car-settings'); } } catch(e) { Swal.fire('ผิดพลาด', 'บันทึกไม่สำเร็จ', 'error'); } finally { document.getElementById('saveCarBtn').disabled = false; } }
+        function deleteCar(id) { Swal.fire({ title: 'ลบข้อมูล?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'ลบเลย!' }).then(async (result) => { if (result.isConfirmed) { try { const res = await apiCall({ action: 'delete_car', id: id }); if(res.status === 'success') { Swal.fire('ลบแล้ว', '', 'success'); await fetchCarsData(); loadPage('car-settings'); } } catch(e) { Swal.fire('ผิดพลาด', 'ไม่สามารถลบได้', 'error'); } } }); }
     </script>
 </body>
 </html>
