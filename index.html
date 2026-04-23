@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (Final Form 2 & Debt Num) -->
+<!-- Role: Frontend Full (Update Form 2 & Badge UI)-->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -181,7 +181,7 @@
     <div class="modal-overlay" id="returnModal"><div class="modal-content" style="max-width:450px;"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 style="color: var(--warning);"><i class="fas fa-undo"></i> ดำเนินการคืนรถ</h3><button class="close-btn" onclick="document.getElementById('returnModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="return-useId"><div style="background: #FFFBEB; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #FDE68A;"><p id="return-display-plate" style="font-size: 18px; font-weight: 600; color: #D97706; margin-bottom: 5px;"></p><p id="return-display-startMile" style="font-size: 14px; color: var(--text-light);"></p></div><div class="input-group"><label>เลขไมล์หลังใช้งาน (ปัจจุบัน) <span style="color:var(--danger);">*</span></label><input type="number" id="return-endMile" style="font-size: 18px; font-weight: 600;"></div><div class="flex-row" style="margin-top: 20px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('returnModal').style.display='none'">ยกเลิก</button><button class="btn btn-warning flex-col" id="submitReturnBtn" onclick="submitReturn()">ยืนยันการคืนรถ</button></div></div></div>
     
     <!-- MODAL: Fuel เติมน้ำมัน -->
-    <div class="modal-overlay" id="fuelModal"><div class="modal-content"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="fuel-id"><div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;"><label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label></div><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="fuel-sangkat" onchange="updateFuelPhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="fuel-phanek" onchange="updateFuelPlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ <span style="color:var(--danger);">*</span></label><select id="fuel-plate" onchange="autoFillFuelCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="fuel-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="fuel-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="flex-row"><div class="input-group flex-col"><label>เลขไมล์</label><input type="number" id="fuel-mile"></div><div class="input-group flex-col"><label>เชื้อเพลิง</label><select id="fuel-type-oil"><option value="">- เลือกชนิดเชื้อเพลิง -</option><option value="Diesel">Diesel</option><option value="Diesel B7">Diesel B7</option><option value="Diesel B20">Diesel B20</option><option value="Diesel Premium">Diesel Premium</option><option value="Gasoline 95">Gasoline 95 (เบนซิน 95)</option><option value="Gasohol 95">Gasohol 95</option><option value="Gasohol 91">Gasohol 91</option><option value="Gasohol E20">Gasohol E20</option><option value="Gasohol E85">Gasohol E85</option><option value="NGV">NGV</option><option value="LPG">LPG</option><option value="EV (Electric)">EV (Electric)</option></select></div></div><div class="flex-row"><div class="input-group flex-col"><label>สถานีบริการ (ปั๊ม)</label><input type="text" id="fuel-station"></div><div class="input-group flex-col"><label>ใบกำกับภาษี (เลขที่ปั๊ม)</label><input type="text" id="fuel-tax-invoice"></div></div><div class="flex-row"><div class="input-group flex-col"><label>ราคา/หน่วย (บาท)</label><input type="number" step="0.01" id="fuel-price" oninput="calculateFuel()"></div><div class="input-group flex-col"><label>ปริมาณ (ลิตร)</label><input type="number" step="0.01" id="fuel-quantity" oninput="calculateFuel()"></div></div><div style="background:#FEF2F2; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #FECACA;"><div class="input-group" style="margin-bottom: 10px;"><label style="color:var(--danger); font-weight:bold; font-size:14px;">จำนวนเงินรวม (Total) <span style="font-weight:normal;font-size:13px;color:var(--primary); background:#EEF2FF; padding:3px 8px; border-radius:4px;"><i class="fas fa-edit"></i> คลิกพิมพ์แก้ไขให้ตรงใบเสร็จได้</span></label><input type="number" step="0.01" id="fuel-total" oninput="recalculateVatFromTotal()" style="font-size:20px; font-weight:bold; color:var(--danger); background:#fff; border-color:var(--danger);"></div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="color:var(--text-light); font-size:14px;">มูลค่าสินค้า (Subtotal):</span><span style="font-weight:500; color:var(--text);" id="fuel-subtotal">0.00</span></div><div style="display:flex; justify-content:space-between;"><span style="color:var(--text-light); font-size:14px;">ภาษีมูลค่าเพิ่ม 7% (VAT):</span><span style="font-weight:500; color:var(--text);" id="fuel-vat">0.00</span></div></div><div class="flex-row"><div class="input-group flex-col"><label>เล่มที่</label><input type="text" id="fuel-book"></div><div class="input-group flex-col"><label>เลขที่</label><input type="text" id="fuel-no"></div></div><div class="flex-row"><div class="input-group flex-col"><label>โครงข่าย</label><input type="text" id="fuel-network"></div><div class="input-group flex-col"><label>WBS</label><input type="text" id="fuel-wbs"></div></div><div style="background:#FFFBEB; padding:15px; border-radius:8px; border:1px solid #FDE68A; margin-bottom: 15px;"><div class="flex-row"><div class="input-group flex-col" style="margin-bottom:0;"><label>รูปใบเสร็จ <span style="color:var(--danger);" id="req-receipt">* บังคับ</span></label><input type="file" id="fuel-img-receipt" accept="image/*"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>รูป ยพ. <span style="color:var(--danger);" id="req-yp">* บังคับ</span></label><input type="file" id="fuel-img-yp" accept="image/*"></div></div><p style="font-size: 11px; color: var(--warning); margin-top: 8px; margin-bottom: 0;">* ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กลงอัตโนมัติ (ประหยัดเน็ตและพื้นที่)</p></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('fuelModal').style.display='none'">ยกเลิก</button><button class="btn btn-danger flex-col" id="submitFuelBtn" onclick="submitFuel()"><i class="fas fa-save"></i> บันทึกข้อมูล</button></div></div></div>
+    <div class="modal-overlay" id="fuelModal"><div class="modal-content"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="fuel-id"><div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;"><label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label></div><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="fuel-sangkat" onchange="updateFuelPhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="fuel-phanek" onchange="updateFuelPlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ <span style="color:var(--danger);">*</span></label><select id="fuel-plate" onchange="autoFillFuelCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="fuel-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="fuel-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="flex-row"><div class="input-group flex-col"><label>เลขไมล์</label><input type="number" id="fuel-mile"></div><div class="input-group flex-col"><label>เชื้อเพลิง</label><select id="fuel-type-oil"><option value="">- เลือกชนิดเชื้อเพลิง -</option><option value="Diesel">Diesel</option><option value="Diesel B7">Diesel B7</option><option value="Diesel B20">Diesel B20</option><option value="Diesel Premium">Diesel Premium</option><option value="Gasoline 95">Gasoline 95 (เบนซิน 95)</option><option value="Gasohol 95">Gasohol 95</option><option value="Gasohol 91">Gasohol 91</option><option value="Gasohol E20">Gasohol E20</option><option value="Gasohol E85">Gasohol E85</option><option value="NGV">NGV</option><option value="LPG">LPG</option><option value="EV (Electric)">EV (Electric)</option></select></div></div><div class="flex-row"><div class="input-group flex-col"><label>สถานีบริการ (ปั๊ม)</label><input type="text" id="fuel-station"></div><div class="input-group flex-col"><label>ใบกำกับภาษี (เลขที่ปั๊ม)</label><input type="text" id="fuel-tax-invoice"></div></div><div class="flex-row"><div class="input-group flex-col"><label>ราคา/หน่วย (บาท)</label><input type="number" step="0.01" id="fuel-price" oninput="calculateFuel()"></div><div class="input-group flex-col"><label>ปริมาณ (ลิตร)</label><input type="number" step="0.01" id="fuel-quantity" oninput="calculateFuel()"></div></div><div style="background:#FEF2F2; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #FECACA;"><div class="input-group" style="margin-bottom: 10px;"><label style="color:var(--danger); font-weight:bold; font-size:14px;">จำนวนเงินรวม (Total) <span style="font-weight:normal;font-size:13px;color:var(--primary); background:#EEF2FF; padding:3px 8px; border-radius:4px;"><i class="fas fa-edit"></i> คลิกพิมพ์แก้ไขให้ตรงใบเสร็จได้</span></label><input type="number" step="0.01" id="fuel-total" oninput="recalculateVatFromTotal()" style="font-size:20px; font-weight:bold; color:var(--danger); background:#fff; border-color:var(--danger);"></div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="color:var(--text-light); font-size:14px;">มูลค่าสินค้า (Subtotal):</span><span style="font-weight:500; color:var(--text);" id="fuel-subtotal">0.00</span></div><div style="display:flex; justify-content:space-between;"><span style="color:var(--text-light); font-size:14px;">ภาษีมูลค่าเพิ่ม 7% (VAT):</span><span style="font-weight:500; color:var(--text);" id="fuel-vat">0.00</span></div></div><div class="flex-row"><div class="input-group flex-col"><label>เล่มที่</label><input type="text" id="fuel-book"></div><div class="input-group flex-col"><label>เลขที่</label><input type="text" id="fuel-no"></div></div><div class="flex-row"><div class="input-group flex-col"><label>โครงข่าย</label><input type="text" id="fuel-network"></div><div class="input-group flex-col"><label>WBS</label><input type="text" id="fuel-wbs"></div></div><div style="background:#FFFBEB; padding:15px; border-radius:8px; border:1px solid #FDE68A; margin-bottom: 15px;"><div class="flex-row"><div class="input-group flex-col" style="margin-bottom:0;"><label>รูปใบเสร็จ <span style="color:var(--danger);" id="req-receipt">* บังคับ</span></label><input type="file" id="fuel-img-receipt" accept="image/*"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>รูป ยพ. <span style="color:var(--danger);" id="req-yp">* บังคับ</span></label><input type="file" id="fuel-img-yp" accept="image/*"></div></div><p style="font-size: 11px; color: var(--warning); margin-top: 8px; margin-bottom: 0;">* ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กลงอัตโนมัติ</p></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('fuelModal').style.display='none'">ยกเลิก</button><button class="btn btn-danger flex-col" id="submitFuelBtn" onclick="submitFuel()"><i class="fas fa-save"></i> บันทึกข้อมูล</button></div></div></div>
 
     <!-- MODAL: กรอกเลขงบ (Budget) -->
     <div class="modal-overlay" id="budgetModal">
@@ -499,7 +499,7 @@
 
             } else {
                 // ==========================================
-                // ฟอร์ม 2: บันทึกข้อความเบิก กฟภ. (อัปเดตโลโก้ + ลบเครื่องหมายในเครดิตภาษี + ตารางส่วนท้ายเว้นว่างให้ปั๊มตรายาง)
+                // ฟอร์ม 2: บันทึกข้อความเบิก กฟภ. (เอา "ทำการ" ออกจากช่องงบ, ปรับตารางเซ็นว่าง)
                 // ==========================================
                 let totalSub = 0; let totalVat = 0; let totalAll = 0; let tableRows = '';
                 carData.forEach((f, index) => {
@@ -513,11 +513,11 @@
                     
                     let budgetOrWbs = f.budget || f.wbs || '';
                     
-                    // นำเครื่องหมายติ๊กถูกช่องเครดิตภาษีออก ปล่อยว่างไว้
+                    // นำ "ทำการ" ออกจากช่อง "งบ" ปล่อยว่างไว้
                     tableRows += `<tr>
                         <td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td>
                         <td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td>
-                        <td></td><td></td><td style="text-align:center;">ทำการ</td><td style="text-align:center;">${budgetOrWbs}</td>
+                        <td></td><td></td><td style="text-align:center;"></td><td style="text-align:center;">${budgetOrWbs}</td>
                     </tr>`;
                 });
 
@@ -527,7 +527,6 @@
                 printSection.innerHTML = `
                     <div style="font-family: 'Sarabun', sans-serif;">
                         <div style="display:flex; align-items:center; margin-bottom:10px;">
-                            <!-- ใส่โลโก้ กฟภ. ตามลิงก์ที่ให้มา ปรับขนาดให้เหมาะสม ไม่โดนตัด -->
                             <img src="https://images2.imgbox.com/b3/4f/rQUZ8OAA_o.png" onerror="this.style.display='none'; document.getElementById('fallback-title').style.display='block';" style="max-height: 80px; width: auto; object-fit: contain; margin-right:15px;">
                             <h2 id="fallback-title" style="margin:0; font-weight:bold; font-size:22px; display:none;">บันทึกข้อความ (การไฟฟ้าส่วนภูมิภาค)</h2>
                         </div>
@@ -538,7 +537,7 @@
                                 <div style="width: 50%;"><b>ถึง</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ผจก.กฟจ.นครพนม</div>
                             </div>
                             <div style="display: flex;">
-                                <div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;ฉ.1.นพ(กส.) -</div>
+                                <div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;ฉ.1.นพ.(กส.) -</div>
                                 <div style="width: 50%;"><b>วันที่</b></div>
                             </div>
                             <div style="display: flex;">
@@ -579,10 +578,10 @@
                             </tbody>
                         </table>
                         
-                        <!-- ตารางส่วนท้าย 4 ช่อง (ลบชื่อและตำแหน่งออกให้ว่างไว้สำหรับปั๊มตรายาง) -->
-                        <table style="width:100%; border:1px solid #000; border-top: none; border-collapse: collapse; font-size:13px;">
+                        <!-- ตารางส่วนท้าย 4 ช่อง ปรับเป็นเว้นว่างสำหรับปั๊มตรายางและปรับเส้นขอบให้ชัดเจน -->
+                        <table style="width:100%; border:1.5px solid #000; border-top: none; border-collapse: collapse; font-size:13px;">
                             <tr>
-                                <td style="width:50%; padding:10px 15px; border-right:1px solid #000; border-bottom:1px solid #000; vertical-align: top;">
+                                <td style="width:50%; padding:10px 15px; border-right:1.5px solid #000; border-bottom:1.5px solid #000; vertical-align: top;">
                                     จึงเรียนมาเพื่อโปรดอนุมัติสั่งซื้อน้ำมันเชื้อเพลิงจาก บริษัท ปตท.จำกัด (มหาชน)<br>และ บริษัท บางจากคอร์ปอเรชั่น จำกัด (มหาชน) ต่อไปด้วย จะขอบคุณยิ่ง<br><br><br>
                                     <div style="text-align:center; line-height: 1.4;">
                                         ลงชื่อ......................................................................<br>
@@ -590,7 +589,7 @@
                                         ตำแหน่ง......................................................................
                                     </div>
                                 </td>
-                                <td style="width:50%; padding:10px 15px; border-bottom:1px solid #000; vertical-align: top;">
+                                <td style="width:50%; padding:10px 15px; border-bottom:1.5px solid #000; vertical-align: top;">
                                     <b>อนุมัติสั่งซื้อน้ำมันเชื้อเพลิง เป็นจำนวนเงินทั้งสิ้น... ${totalAll.toFixed(2)} บาท<br>
                                     (รวมภาษีมูลค่าเพิ่ม)</b><br><br><br><br>
                                     <div style="text-align:center; line-height: 1.4;">
@@ -602,7 +601,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td style="width:50%; padding:10px 15px; border-right:1px solid #000; vertical-align: top;">
+                                <td style="width:50%; padding:10px 15px; border-right:1.5px solid #000; vertical-align: top;">
                                     <div style="text-align:center; font-weight:bold; text-decoration:underline; margin-bottom:5px;">รายงานผลการตรวจรับ</div>
                                     จาก คณะกรรมการตรวจรับ<br>
                                     เรียน ผจก.กฟจ.นพ.<br>
@@ -613,7 +612,6 @@
                                         ................................................ กรรมการ<br>
                                         ................................................ กรรมการ<br>
                                     </div>
-                                    <!-- ปรับเส้นคั่นให้หนาขึ้น (1.5px) -->
                                     <hr style="border-top:1.5px solid #000; margin: 10px 0;">
                                     ได้รับของจากคณะกรรมการตรวจรับเพื่อใช้งานแล้ว เมื่อวัน<br>ที่...................................................<br><br>
                                     <div style="text-align:center; line-height: 1.4;">
@@ -694,7 +692,15 @@
 
             pageData.forEach(f => {
                 const formattedDate = formatDisplayDate(f.date); 
-                const debtBadge = f.isDebt ? `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว ${f.debtNo && f.debtNo !== '-' ? '('+f.debtNo+')' : ''}</span>` : `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
+                
+                // จัดเรียงเลขตั้งหนี้ให้อยู่บรรทัดล่าง แบบในภาพที่ 2
+                let debtBadge = `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
+                if(f.isDebt) {
+                    debtBadge = `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว</span>`;
+                    if(f.debtNo && f.debtNo !== '-') {
+                        debtBadge += `<br><span style="font-size:12px; color:#065F46; font-weight:600; display:inline-block; margin-top:4px;">(${f.debtNo})</span>`;
+                    }
+                }
                 
                 let docHtml = ''; if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> บิล</a><br>`; if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> ยพ.</a>`; if(!docHtml) docHtml = '-';
                 
