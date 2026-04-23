@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (Sarabun Global & Fixed Layout)-->
+<!-- Role: Frontend Full (Final Form 2 Blank Signatures)-->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -8,8 +8,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจัดการรถองค์กร</title>
-    <!-- โหลดฟอนต์ Sarabun เป็นหลัก -->
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- เพิ่มฟอนต์ Sarabun เข้ามาสำหรับหน้ารายงาน -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -24,21 +24,20 @@
             --border: #E5E7EB; 
         }
 
-        /* เปลี่ยนฟอนต์ทั้งระบบเป็น Sarabun */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Prompt', sans-serif; }
         body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        .btn { padding: 10px 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { padding: 10px 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:hover { background: var(--primary-hover); }
         .btn-success { background: var(--success); } .btn-success:hover { background: var(--success-hover); }
         .btn-warning { background: var(--warning); color: white;} .btn-warning:hover { background: var(--warning-hover); }
         .btn-danger { background: var(--danger); } .btn-danger:hover { background: var(--danger-hover); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-sm { padding: 6px 10px; font-size: 13px; }
+        .btn-sm { padding: 6px 10px; font-size: 12px; }
         
         .input-group { margin-bottom: 16px; text-align: left; width: 100%; }
-        .input-group label { display: block; margin-bottom: 6px; color: var(--text-light); font-size: 14px; font-weight: 600;}
-        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; transition: 0.3s; background: var(--surface); }
+        .input-group label { display: block; margin-bottom: 6px; color: var(--text-light); font-size: 13px; font-weight: 500;}
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; background: var(--surface); }
         .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241, 0.1); }
         .input-group input[readonly] { background-color: #F3F4F6; color: var(--text-light); cursor: not-allowed; }
         
@@ -47,7 +46,6 @@
 
         .form-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%; margin-top: 20px;}
         
-        /* CSS หน้าตรวจเช็คสภาพรถที่แก้ไขให้กลับมาเป๊ะเหมือนเดิม */
         .check-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
         .check-item:last-child { border-bottom: none; }
         .check-item label { display: inline-block; margin: 0; font-size: 15px; color: var(--text); font-weight: 500; }
@@ -58,7 +56,7 @@
         .stat-card { background: var(--surface); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
         .stat-icon { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
         .stat-info h3 { font-size: 24px; color: var(--text); margin: 0 0 4px 0; line-height: 1; }
-        .stat-info p { font-size: 14px; color: var(--text-light); margin: 0; }
+        .stat-info p { font-size: 13px; color: var(--text-light); margin: 0; }
         
         .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 24px;}
         .action-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -114,7 +112,8 @@
         #print-section { display: none; }
         @media print {
             body * { visibility: hidden !important; }
-            #print-section, #print-section * { visibility: visible !important; font-family: 'Sarabun', sans-serif !important; }
+            /* บังคับใช้ฟอนต์ Sarabun ทั้งหมดในหน้า Print */
+            #print-section, #print-section * { visibility: visible !important; font-family: 'Sarabun', sans-serif !important; color: #000; }
             #print-section { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background: white; }
             #dashboard-screen { display: none !important; }
             @page { size: A4 portrait; margin: 15mm; }
@@ -123,7 +122,7 @@
             .print-header-info { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
             .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
             .print-table th, .print-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; }
-            .print-table th { background-color: #f0f0f0; font-weight: bold; }
+            .print-table th { background-color: #f9f9f9; font-weight: bold; }
             .print-sign-area { display: flex; justify-content: space-around; margin-top: 50px; font-size: 14px; text-align: center;}
             .print-sign-box { width: 30%; }
             .print-sign-line { border-bottom: 1px dotted #000; margin-bottom: 5px; height: 30px;}
@@ -183,7 +182,7 @@
     <div class="modal-overlay" id="returnModal"><div class="modal-content" style="max-width:450px;"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 style="color: var(--warning);"><i class="fas fa-undo"></i> ดำเนินการคืนรถ</h3><button class="close-btn" onclick="document.getElementById('returnModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="return-useId"><div style="background: #FFFBEB; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #FDE68A;"><p id="return-display-plate" style="font-size: 18px; font-weight: 600; color: #D97706; margin-bottom: 5px;"></p><p id="return-display-startMile" style="font-size: 14px; color: var(--text-light);"></p></div><div class="input-group"><label>เลขไมล์หลังใช้งาน (ปัจจุบัน) <span style="color:var(--danger);">*</span></label><input type="number" id="return-endMile" style="font-size: 18px; font-weight: 600;"></div><div class="flex-row" style="margin-top: 20px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('returnModal').style.display='none'">ยกเลิก</button><button class="btn btn-warning flex-col" id="submitReturnBtn" onclick="submitReturn()">ยืนยันการคืนรถ</button></div></div></div>
     
     <!-- MODAL: Fuel เติมน้ำมัน -->
-    <div class="modal-overlay" id="fuelModal"><div class="modal-content"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="fuel-id"><div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;"><label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label></div><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="fuel-sangkat" onchange="updateFuelPhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="fuel-phanek" onchange="updateFuelPlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ <span style="color:var(--danger);">*</span></label><select id="fuel-plate" onchange="autoFillFuelCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="fuel-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="fuel-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="flex-row"><div class="input-group flex-col"><label>เลขไมล์</label><input type="number" id="fuel-mile"></div><div class="input-group flex-col"><label>เชื้อเพลิง</label><select id="fuel-type-oil"><option value="">- เลือกชนิดเชื้อเพลิง -</option><option value="Diesel">Diesel</option><option value="Diesel B7">Diesel B7</option><option value="Diesel B20">Diesel B20</option><option value="Diesel Premium">Diesel Premium</option><option value="Gasoline 95">Gasoline 95 (เบนซิน 95)</option><option value="Gasohol 95">Gasohol 95</option><option value="Gasohol 91">Gasohol 91</option><option value="Gasohol E20">Gasohol E20</option><option value="Gasohol E85">Gasohol E85</option><option value="NGV">NGV</option><option value="LPG">LPG</option><option value="EV (Electric)">EV (Electric)</option></select></div></div><div class="flex-row"><div class="input-group flex-col"><label>สถานีบริการ (ปั๊ม)</label><input type="text" id="fuel-station"></div><div class="input-group flex-col"><label>ใบกำกับภาษี (เลขที่ปั๊ม)</label><input type="text" id="fuel-tax-invoice"></div></div><div class="flex-row"><div class="input-group flex-col"><label>ราคา/หน่วย (บาท)</label><input type="number" step="0.01" id="fuel-price" oninput="calculateFuel()"></div><div class="input-group flex-col"><label>ปริมาณ (ลิตร)</label><input type="number" step="0.01" id="fuel-quantity" oninput="calculateFuel()"></div></div><div style="background:#FEF2F2; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #FECACA;"><div class="input-group" style="margin-bottom: 10px;"><label style="color:var(--danger); font-weight:bold; font-size:14px;">จำนวนเงินรวม (Total) <span style="font-weight:normal;font-size:13px;color:var(--primary); background:#EEF2FF; padding:3px 8px; border-radius:4px;"><i class="fas fa-edit"></i> คลิกพิมพ์แก้ไขให้ตรงใบเสร็จได้</span></label><input type="number" step="0.01" id="fuel-total" oninput="recalculateVatFromTotal()" style="font-size:20px; font-weight:bold; color:var(--danger); background:#fff; border-color:var(--danger);"></div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="color:var(--text-light); font-size:14px;">มูลค่าสินค้า (Subtotal):</span><span style="font-weight:500; color:var(--text);" id="fuel-subtotal">0.00</span></div><div style="display:flex; justify-content:space-between;"><span style="color:var(--text-light); font-size:14px;">ภาษีมูลค่าเพิ่ม 7% (VAT):</span><span style="font-weight:500; color:var(--text);" id="fuel-vat">0.00</span></div></div><div class="flex-row"><div class="input-group flex-col"><label>เล่มที่</label><input type="text" id="fuel-book"></div><div class="input-group flex-col"><label>เลขที่</label><input type="text" id="fuel-no"></div></div><div class="flex-row"><div class="input-group flex-col"><label>โครงข่าย</label><input type="text" id="fuel-network"></div><div class="input-group flex-col"><label>WBS</label><input type="text" id="fuel-wbs"></div></div><div style="background:#FFFBEB; padding:15px; border-radius:8px; border:1px solid #FDE68A; margin-bottom: 15px;"><div class="flex-row"><div class="input-group flex-col" style="margin-bottom:0;"><label>รูปใบเสร็จ <span style="color:var(--danger);" id="req-receipt">* บังคับ</span></label><input type="file" id="fuel-img-receipt" accept="image/*"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>รูป ยพ. <span style="color:var(--danger);" id="req-yp">* บังคับ</span></label><input type="file" id="fuel-img-yp" accept="image/*"></div></div><p style="font-size: 12px; color: var(--warning); margin-top: 8px; margin-bottom: 0;">* ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กลงอัตโนมัติ</p></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('fuelModal').style.display='none'">ยกเลิก</button><button class="btn btn-danger flex-col" id="submitFuelBtn" onclick="submitFuel()"><i class="fas fa-save"></i> บันทึกข้อมูล</button></div></div></div>
+    <div class="modal-overlay" id="fuelModal"><div class="modal-content"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="fuel-id"><div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;"><label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label></div><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="fuel-sangkat" onchange="updateFuelPhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="fuel-phanek" onchange="updateFuelPlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ <span style="color:var(--danger);">*</span></label><select id="fuel-plate" onchange="autoFillFuelCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="fuel-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="fuel-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="flex-row"><div class="input-group flex-col"><label>เลขไมล์</label><input type="number" id="fuel-mile"></div><div class="input-group flex-col"><label>เชื้อเพลิง</label><select id="fuel-type-oil"><option value="">- เลือกชนิดเชื้อเพลิง -</option><option value="Diesel">Diesel</option><option value="Diesel B7">Diesel B7</option><option value="Diesel B20">Diesel B20</option><option value="Diesel Premium">Diesel Premium</option><option value="Gasoline 95">Gasoline 95 (เบนซิน 95)</option><option value="Gasohol 95">Gasohol 95</option><option value="Gasohol 91">Gasohol 91</option><option value="Gasohol E20">Gasohol E20</option><option value="Gasohol E85">Gasohol E85</option><option value="NGV">NGV</option><option value="LPG">LPG</option><option value="EV (Electric)">EV (Electric)</option></select></div></div><div class="flex-row"><div class="input-group flex-col"><label>สถานีบริการ (ปั๊ม)</label><input type="text" id="fuel-station"></div><div class="input-group flex-col"><label>ใบกำกับภาษี (เลขที่ปั๊ม)</label><input type="text" id="fuel-tax-invoice"></div></div><div class="flex-row"><div class="input-group flex-col"><label>ราคา/หน่วย (บาท)</label><input type="number" step="0.01" id="fuel-price" oninput="calculateFuel()"></div><div class="input-group flex-col"><label>ปริมาณ (ลิตร)</label><input type="number" step="0.01" id="fuel-quantity" oninput="calculateFuel()"></div></div><div style="background:#FEF2F2; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #FECACA;"><div class="input-group" style="margin-bottom: 10px;"><label style="color:var(--danger); font-weight:bold; font-size:14px;">จำนวนเงินรวม (Total) <span style="font-weight:normal;font-size:13px;color:var(--primary); background:#EEF2FF; padding:3px 8px; border-radius:4px;"><i class="fas fa-edit"></i> คลิกพิมพ์แก้ไขให้ตรงใบเสร็จได้</span></label><input type="number" step="0.01" id="fuel-total" oninput="recalculateVatFromTotal()" style="font-size:20px; font-weight:bold; color:var(--danger); background:#fff; border-color:var(--danger);"></div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="color:var(--text-light); font-size:14px;">มูลค่าสินค้า (Subtotal):</span><span style="font-weight:500; color:var(--text);" id="fuel-subtotal">0.00</span></div><div style="display:flex; justify-content:space-between;"><span style="color:var(--text-light); font-size:14px;">ภาษีมูลค่าเพิ่ม 7% (VAT):</span><span style="font-weight:500; color:var(--text);" id="fuel-vat">0.00</span></div></div><div class="flex-row"><div class="input-group flex-col"><label>เล่มที่</label><input type="text" id="fuel-book"></div><div class="input-group flex-col"><label>เลขที่</label><input type="text" id="fuel-no"></div></div><div class="flex-row"><div class="input-group flex-col"><label>โครงข่าย</label><input type="text" id="fuel-network"></div><div class="input-group flex-col"><label>WBS</label><input type="text" id="fuel-wbs"></div></div><div style="background:#FFFBEB; padding:15px; border-radius:8px; border:1px solid #FDE68A; margin-bottom: 15px;"><div class="flex-row"><div class="input-group flex-col" style="margin-bottom:0;"><label>รูปใบเสร็จ <span style="color:var(--danger);" id="req-receipt">* บังคับ</span></label><input type="file" id="fuel-img-receipt" accept="image/*"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>รูป ยพ. <span style="color:var(--danger);" id="req-yp">* บังคับ</span></label><input type="file" id="fuel-img-yp" accept="image/*"></div></div><p style="font-size: 11px; color: var(--warning); margin-top: 8px; margin-bottom: 0;">* ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กลงอัตโนมัติ (ประหยัดเน็ตและพื้นที่)</p></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('fuelModal').style.display='none'">ยกเลิก</button><button class="btn btn-danger flex-col" id="submitFuelBtn" onclick="submitFuel()"><i class="fas fa-save"></i> บันทึกข้อมูล</button></div></div></div>
 
     <!-- MODAL: กรอกเลขงบ (Budget) -->
     <div class="modal-overlay" id="budgetModal">
@@ -215,6 +214,41 @@
         function formatDisplayDate(dateStr) { if(!dateStr) return ''; if(dateStr.includes('T') && dateStr.includes('Z')) { const d = new Date(dateStr); const pad = (n) => n.toString().padStart(2, '0'); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; } return dateStr; }
         function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) { return new Promise((resolve, reject) => { if (!file) return resolve(""); const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (event) => { const img = new Image(); img.src = event.target.result; img.onload = () => { let width = img.width; let height = img.height; if (width > maxWidth || height > maxHeight) { if (width > height) { height = Math.round((height *= maxWidth / width)); width = maxWidth; } else { width = Math.round((width *= maxHeight / height)); height = maxHeight; } } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/jpeg', quality)); }; img.onerror = (e) => reject(e); }; reader.onerror = (e) => reject(e); }); }
 
+        // ฟังก์ชันแปลงเลขเป็นข้อความภาษาไทย (บาท/สตางค์)
+        function ThaiBaht(Number) {
+            let txtNumArr = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า', 'สิบ'];
+            let txtDigitArr = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+            let BahtText = '';
+            if (isNaN(Number)) return 'ข้อมูลไม่ถูกต้อง';
+            let amount = parseFloat(Number).toFixed(2) + '';
+            let parts = amount.split('.');
+            let number = parts[0];
+            let decimal = parts[1];
+
+            function convert(str) {
+                let text = '';
+                for (let i = 0; i < str.length; i++) {
+                    let n = parseInt(str.charAt(i));
+                    let place = str.length - i - 1;
+                    if (n !== 0) {
+                        if (n === 1 && place === 0 && str.length > 1) { text += 'เอ็ด'; } 
+                        else if (n === 2 && place === 1) { text += 'ยี่สิบ'; } 
+                        else if (n === 1 && place === 1) { text += 'สิบ'; } 
+                        else { text += txtNumArr[n] + txtDigitArr[place % 6]; if (place >= 6 && place % 6 === 0) text += 'ล้าน'; }
+                    } else if (place >= 6 && place % 6 === 0 && text.length > 0 && !text.endsWith('ล้าน')) { text += 'ล้าน'; }
+                }
+                return text;
+            }
+
+            BahtText = convert(number);
+            if (BahtText === '') BahtText = 'ศูนย์';
+            BahtText += 'บาท';
+
+            if (decimal === '00') { BahtText += 'ถ้วน'; } 
+            else { BahtText += convert(decimal) + 'สตางค์'; }
+            return BahtText;
+        }
+
         window.onload = function() { const savedUser = localStorage.getItem('user_session'); if(savedUser) { renderDashboard(JSON.parse(savedUser)); fetchCarsData(); loadPage('dashboard', document.querySelector('.menu-item')); } }
 
         // CORE & AUTH
@@ -239,6 +273,368 @@
             else if(page === 'report') renderReportPage(contentDiv); 
             else if(page === 'car-settings') renderAdminCarPage(contentDiv);
             else if(page === 'user-settings') renderAdminUserPage(contentDiv);
+        }
+
+        // ==========================================
+        // REPORT / PRINT PDF PAGE
+        // ==========================================
+        async function renderReportPage(container) {
+            if(currentFuelsList.length === 0) await fetchFuelsData();
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+            container.innerHTML = `
+                <div class="page-title" style="color: var(--success);"><i class="fas fa-print"></i> พิมพ์รายงาน / บันทึกข้อความ (PDF)</div>
+                <div class="form-box">
+                    <div class="flex-row">
+                        <div class="input-group flex-col"><label>ตั้งแต่วันที่</label><input type="date" id="rep-start" value="${firstDay}"></div>
+                        <div class="input-group flex-col"><label>ถึงวันที่</label><input type="date" id="rep-end" value="${lastDay}"></div>
+                    </div>
+                    
+                    <div class="flex-row">
+                        <div class="input-group flex-col"><label>สังกัด</label><select id="rep-sangkat" onchange="updateRepPhanek()"><option value="">- เลือกสังกัด -</option></select></div>
+                        <div class="input-group flex-col"><label>แผนก</label><select id="rep-phanek" onchange="updateRepPlate()"><option value="">- เลือกแผนก -</option></select></div>
+                        <div class="input-group flex-col">
+                            <label>เลือกทะเบียนรถ</label>
+                            <select id="rep-plate"><option value="">- เลือกทะเบียนรถ -</option></select>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>เลือกแบบฟอร์ม</label>
+                        <select id="rep-type">
+                            <option value="1">ฟอร์ม 1: รายการใช้น้ำมันเชื้อเพลิง (ตารางการเติมน้ำมัน)</option>
+                            <option value="2">ฟอร์ม 2: บันทึกข้อความขออนุมัติเบิก กฟภ. (ตั้งเบิกค่าน้ำมัน)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-success" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" onclick="generateReportPDF()">
+                        <i class="fas fa-file-pdf"></i> สร้างรายงาน & พิมพ์ PDF
+                    </button>
+                    <p style="text-align:center; font-size:12px; color:var(--text-light); margin-top:10px;">* ระบบจะเปิดหน้าต่าง Print ของเบราว์เซอร์ ให้เลือก Destination เป็น "Save as PDF" เพื่อบันทึกเป็นไฟล์</p>
+                </div>
+            `;
+            
+            const selectRepSangkat = document.getElementById('rep-sangkat');
+            [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => selectRepSangkat.add(new Option(s, s)));
+            updateRepPhanek(); 
+        }
+
+        function updateRepPhanek() {
+            const s = document.getElementById('rep-sangkat').value; const selectP = document.getElementById('rep-phanek'); const selectPl = document.getElementById('rep-plate');
+            selectP.innerHTML = '<option value="">- เลือกแผนก -</option>'; selectPl.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>';
+            let filtered = currentCarsList; if(s) filtered = filtered.filter(c => c.sangkat === s);
+            [...new Set(filtered.map(c => c.phanek))].forEach(p => selectP.add(new Option(p, p))); [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl)));
+        }
+
+        function updateRepPlate() {
+            const s = document.getElementById('rep-sangkat').value; const p = document.getElementById('rep-phanek').value; const selectPl = document.getElementById('rep-plate');
+            selectPl.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; let filtered = currentCarsList;
+            if(s) filtered = filtered.filter(c => c.sangkat === s); if(p) filtered = filtered.filter(c => c.phanek === p);
+            [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl)));
+        }
+
+        function generateReportPDF() {
+            const startDateStr = document.getElementById('rep-start').value; const endDateStr = document.getElementById('rep-end').value;
+            const type = document.getElementById('rep-type').value; const plate = document.getElementById('rep-plate').value;
+
+            if(!startDateStr || !endDateStr) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกช่วงวันที่ให้ครบ', 'warning');
+            if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถด้วยครับ เพื่อให้ออกฟอร์มได้ถูกต้อง', 'warning');
+
+            const startD = new Date(startDateStr); startD.setHours(0,0,0,0); const endD = new Date(endDateStr); endD.setHours(23,59,59,999);
+
+            let filteredData = currentFuelsList.filter(f => {
+                if(!f.date) return false; let d = new Date(f.date);
+                if(isNaN(d)) { const parts = f.date.split(' ')[0].split('/'); if(parts.length===3) d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
+                return d >= startD && d <= endD;
+            });
+
+            filteredData.sort((a, b) => {
+                let dA = new Date(a.date); if(isNaN(dA)){ const p=a.date.split(' ')[0].split('/'); dA=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
+                let dB = new Date(b.date); if(isNaN(dB)){ const p=b.date.split(' ')[0].split('/'); dB=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
+                return dA - dB;
+            });
+
+            const carData = filteredData.filter(f => f.plate === plate);
+            const carInfo = currentCarsList.find(c => c.plate === plate);
+            
+            if(carData.length === 0) return Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลการเติมน้ำมันของรถคันนี้ในช่วงเวลาที่เลือก', 'info');
+
+            const printSection = document.getElementById('print-section');
+            const monthNames = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+            const shortMonthNames = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+            const reportMonth = `${monthNames[endD.getMonth()]} ${endD.getFullYear()+543}`;
+
+            if(type === '1') {
+                // ==========================================
+                // ฟอร์ม 1: รายการใช้น้ำมัน
+                // ==========================================
+                let totalLiter = 0; let totalCost = 0; let totalDistance = 0;
+                
+                let trueFirstMile = '';
+                let allSorted = currentFuelsList.filter(x => x.plate === plate).sort((a, b) => {
+                    let dA = new Date(a.date); if(isNaN(dA)){ const p=a.date.split(' ')[0].split('/'); dA=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
+                    let dB = new Date(b.date); if(isNaN(dB)){ const p=b.date.split(' ')[0].split('/'); dB=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
+                    return dA - dB;
+                });
+                let firstIndex = allSorted.findIndex(f => f.id === carData[0].id);
+                if(firstIndex > 0) { trueFirstMile = parseFloat(allSorted[firstIndex - 1].mile) || ''; }
+                
+                let tableRows = `<tr>
+                    <td></td>
+                    <td></td>
+                    <td></td><td></td>
+                    <td></td><td style="text-align:right;">ยกมา</td>
+                    <td>${trueFirstMile !== '' ? trueFirstMile : ''}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>`;
+                
+                let prevM = trueFirstMile;
+                carData.forEach((f, idx) => {
+                    let dText = '';
+                    if(f.date) {
+                        let d = new Date(f.date); if(isNaN(d)) { const p = f.date.split(' ')[0].split('/'); d = new Date(`${p[2]}-${p[1]}-${p[0]}`); }
+                        dText = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${(d.getFullYear()+543).toString().slice(-2)}'`;
+                    }
+                    
+                    const q = parseFloat(f.quantity) || 0; const c = parseFloat(f.totalAmount) || 0; const m = parseFloat(f.mile) || 0;
+                    
+                    let dist = '';
+                    if (prevM !== '' && m >= prevM) { dist = m - prevM; } 
+                    else if (idx > 0) { let lastM = parseFloat(carData[idx-1].mile) || 0; if(m >= lastM) dist = m - lastM; }
+                    
+                    totalLiter += q; totalCost += c; if(dist !== '') totalDistance += dist;
+                    let avg = (dist !== '' && q > 0) ? (dist / q).toFixed(2) : '';
+                    
+                    let docText = f.docNo || '';
+                    let budgetText = f.budget || ''; 
+                    let stationText = f.station || ''; 
+
+                    tableRows += `<tr>
+                        <td>${dText}</td>
+                        <td>${docText}</td>
+                        <td>${q > 0 ? q.toFixed(2) : ''}</td>
+                        <td>${c > 0 ? c.toFixed(2) : ''}</td>
+                        <td></td>
+                        <td></td>
+                        <td>${m || ''}</td>
+                        <td style="text-align:center;">${budgetText}</td> 
+                        <td>${dist || ''}</td>
+                        <td>${avg}</td>
+                        <td style="text-align:left;">${stationText}</td>
+                    </tr>`;
+                    prevM = m;
+                });
+                
+                let totalAvg = (totalDistance > 0 && totalLiter > 0) ? (totalDistance / totalLiter).toFixed(2) : '';
+
+                printSection.innerHTML = `
+                    <div style="font-family: 'Sarabun', sans-serif;">
+                        <div class="print-title" style="margin-bottom: 5px;">รายการใช้น้ำมันเชื้อเพลิงและน้ำมันหล่อลื่น</div>
+                        <div class="print-title" style="font-weight: normal; margin-bottom: 15px;">ประจำเดือน ${reportMonth}</div>
+                        
+                        <div style="font-size: 14px; margin-bottom: 10px; font-weight: bold; text-align: center;">
+                            ชื่อผู้ใช้รถ ........................................................................ ตำแหน่ง ........................................................................
+                        </div>
+                        <div style="font-size: 14px; margin-bottom: 15px; font-weight: bold; text-align: center; display: flex; justify-content: center; gap: 20px;">
+                            <span>รถยี่ห้อ ${carInfo ? carInfo.brand : ''}</span>
+                            <span>ประเภท ${carInfo ? carInfo.type : ''}</span>
+                            <span>ทะเบียน ${plate}</span>
+                            <span>สังกัด ${carInfo ? carInfo.sangkat : ''}</span>
+                        </div>
+
+                        <table class="print-table" style="margin-top:15px; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th rowspan="3" style="width:7%;">ว.ด.ป</th>
+                                    <th rowspan="3" style="width:10%;">เลขที่<br>ใบสั่งจ่าย</th>
+                                    <th colspan="4" style="border-bottom: 1px solid #000;">น้ำมันที่ใช้</th>
+                                    <th rowspan="3" style="width:9%;">เลข กม.<br>ที่เบิกเติม</th>
+                                    <th rowspan="3" style="width:9%;">งบ</th>
+                                    <th rowspan="3" style="width:8%;">ระยะทาง</th>
+                                    <th rowspan="3" style="width:8%;">เฉลี่ย<br>กม./ลิตร</th>
+                                    <th rowspan="3" style="width:15%; text-align:center;">หมายเหตุ</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="2">เบนซิน</th>
+                                    <th colspan="2">หล่อลื่น</th>
+                                </tr>
+                                <tr>
+                                    <th style="width:6%;">ลิตร</th><th style="width:8%;">เป็นเงิน</th>
+                                    <th style="width:6%;">ลิตร</th><th style="width:8%;">เป็นเงิน</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                                <tr style="font-weight:bold; background:#f9f9f9;">
+                                    <td colspan="2">รวม</td>
+                                    <td>${totalLiter > 0 ? totalLiter.toFixed(2) : ''}</td>
+                                    <td>${totalCost > 0 ? totalCost.toFixed(2) : ''}</td>
+                                    <td></td><td></td><td></td><td></td>
+                                    <td>${totalDistance > 0 ? totalDistance : ''}</td>
+                                    <td>${totalAvg}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="print-sign-area" style="justify-content: space-between; margin-top: 40px; padding: 0 20px;">
+                            <div style="width: 45%; text-align: center;">
+                                <div class="print-sign-line" style="width: 80%; margin: 0 auto;"></div>
+                                (.........................................................................)<br>
+                                หัวหน้าหน่วยงานที่มีหน้าที่ควบคุมดูแลยานพาหนะ<br>
+                                <span style="font-size: 12px; font-weight: normal;">ถ้ามีเหตุผลที่จะชี้แจงเกี่ยวกับการใช้น้ำมันมากเกินกว่าเหตุในรอบเดือน (ให้ชี้แจงประกอบ)</span>
+                            </div>
+                            <div style="width: 45%; text-align: center;">
+                                <div class="print-sign-line" style="width: 80%; margin: 0 auto;"></div>
+                                ผจก.กฟจ.นพ.<br>
+                                วันที่ .......... / .................... / ...........
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            } else {
+                // ==========================================
+                // ฟอร์ม 2: บันทึกข้อความเบิก กฟภ.
+                // ==========================================
+                let totalSub = 0; let totalVat = 0; let totalAll = 0; let tableRows = '';
+                carData.forEach((f, index) => {
+                    let dText = '';
+                    if(f.date) {
+                        let d = new Date(f.date); if(isNaN(d)) { const p = f.date.split(' ')[0].split('/'); d = new Date(`${p[2]}-${p[1]}-${p[0]}`); }
+                        dText = `${d.getDate()} ${shortMonthNames[d.getMonth()]} ${d.getFullYear()+543}`;
+                    }
+                    const t = parseFloat(f.totalAmount) || 0; const sub = (t * 100) / 107; const vat = (t * 7) / 107;
+                    totalSub += sub; totalVat += vat; totalAll += t;
+                    
+                    let budgetOrWbs = f.budget || f.wbs || '';
+                    
+                    tableRows += `<tr>
+                        <td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td>
+                        <td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td>
+                        <td></td><td></td><td style="text-align:center;">ทำการ</td><td style="text-align:center;">${budgetOrWbs}</td>
+                    </tr>`;
+                });
+
+                const carTypeStr = carInfo ? carInfo.type : ''; const carDeptStr = carInfo ? `${carInfo.phanek} ${carInfo.sangkat}` : '';
+                const thaiBahtText = ThaiBaht(totalAll);
+
+                printSection.innerHTML = `
+                    <div style="font-family: 'Sarabun', sans-serif;">
+                        <div style="display:flex; align-items:center; margin-bottom:10px;">
+                            <img src="https://images2.imgbox.com/b3/4f/rQUZ8OAA_o.png" onerror="this.style.display='none'; document.getElementById('fallback-title').style.display='block';" style="max-height: 80px; width: auto; object-fit: contain; margin-right:15px;">
+                            <h2 id="fallback-title" style="margin:0; font-weight:bold; font-size:22px; display:none;">บันทึกข้อความ (การไฟฟ้าส่วนภูมิภาค)</h2>
+                        </div>
+                        
+                        <div style="font-size:14px; line-height: 1.6; margin-bottom: 10px;">
+                            <div style="display: flex;">
+                                <div style="width: 50%;"><b>จาก</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ผกส.กฟจ.นครพนม</div>
+                                <div style="width: 50%;"><b>ถึง</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ผจก.กฟจ.นครพนม</div>
+                            </div>
+                            <div style="display: flex;">
+                                <div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;ฉ.1.นพ.(กส.) -</div>
+                                <div style="width: 50%;"><b>วันที่</b></div>
+                            </div>
+                            <div style="display: flex;">
+                                <div style="width: 40px;"><b>เรื่อง</b></div>
+                                <div>อนุมัติสั่งซื้อ อนุมัติจ่ายเงินค่าน้ำมันเชื้อเพลิง โดยวิธีเฉพาะเจาะจง ด้วยการใช้บัตรเครดิตน้ำมัน และรายงานผลการตรวจรับ</div>
+                            </div>
+                            <div style="display: flex;">
+                                <div style="width: 40px;"><b>เรียน</b></div>
+                                <div>ผจก.กฟจ.นครพนม</div>
+                            </div>
+                        </div>
+                        
+                        <p style="font-size:14px; text-indent: 40px; margin-bottom:10px; line-height: 1.6; text-align: justify;">
+                            ตามความเห็นชอบและอนุมัติรายงานขอซื้อขอจ้างน้ำมันเชื้อเพลิง มีความประสงค์จัดซื้อน้ำมันเชื้อเพลิง สำหรับรถยนต์ทะเบียน <b>${plate}</b> ประเภท <b>${carTypeStr}</b> ประจำ <b>${carDeptStr}</b> ประจำเดือน <b>${reportMonth}</b> เพื่อใช้ในการปฏิบัติงาน จากสถานีบริการน้ำมันภายใต้การให้บริการ โดยบัตรเครดิตน้ำมันจากธนาคารกรุงไทย จำกัด (มหาชน) สาขานครพนม มีรายละเอียดดังนี้
+                        </p>
+                        
+                        <table class="print-table" style="margin-bottom: 0; border-bottom: none;">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="width: 5%;">ลำดับ</th>
+                                    <th rowspan="2" style="width: 15%;">วันที่</th>
+                                    <th rowspan="2" style="width: 12%;">ค่าน้ำมัน<br>(ก่อน VAT)</th>
+                                    <th rowspan="2" style="width: 12%;">ภาษีมูลค่าเพิ่ม</th>
+                                    <th rowspan="2" style="width: 12%;">รวมเป็นเงิน<br>(รวมภาษี)</th>
+                                    <th colspan="2" style="width: 10%;">เครดิตภาษี</th>
+                                    <th rowspan="2" style="width: 10%;">งบ</th>
+                                    <th rowspan="2" style="width: 24%;">ศูนย์ต้นทุน/WBS/โครงข่าย</th>
+                                </tr>
+                                <tr><th style="width: 5%;">ได้</th><th style="width: 5%;">ไม่ได้</th></tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                                <tr style="font-weight:bold; background:#f9f9f9;">
+                                    <td colspan="4" style="text-align:left; padding-left: 10px;">รวมเป็นเงินทั้งสิ้น ( ${thaiBahtText} )</td>
+                                    <td style="text-align:right;">${totalAll.toFixed(2)}</td>
+                                    <td colspan="4"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <!-- ตารางส่วนท้าย 4 ช่อง ว่างไว้สำหรับปั๊มตรายาง -->
+                        <table style="width:100%; border:1px solid #000; border-top: none; border-collapse: collapse; font-size:13px;">
+                            <tr>
+                                <td style="width:50%; padding:10px 15px; border-right:1px solid #000; border-bottom:1px solid #000; vertical-align: top;">
+                                    จึงเรียนมาเพื่อโปรดอนุมัติสั่งซื้อน้ำมันเชื้อเพลิงจาก บริษัท ปตท.จำกัด (มหาชน)<br>และ บริษัท บางจากคอร์ปอเรชั่น จำกัด (มหาชน) ต่อไปด้วย จะขอบคุณยิ่ง<br><br><br>
+                                    <div style="text-align:center; line-height: 1.4;">
+                                        ลงชื่อ......................................................................<br>
+                                        (......................................................................)<br>
+                                        ตำแหน่ง......................................................................
+                                    </div>
+                                </td>
+                                <td style="width:50%; padding:10px 15px; border-bottom:1px solid #000; vertical-align: top;">
+                                    <b>อนุมัติสั่งซื้อน้ำมันเชื้อเพลิง เป็นจำนวนเงินทั้งสิ้น... ${totalAll.toFixed(2)} บาท<br>
+                                    (รวมภาษีมูลค่าเพิ่ม)</b><br><br><br><br>
+                                    <div style="text-align:center; line-height: 1.4;">
+                                        ลงชื่อ......................................................................<br>
+                                        (......................................................................)<br>
+                                        ตำแหน่ง......................................................................<br>
+                                        วันที่ .......... / .................... / ...........
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:50%; padding:10px 15px; border-right:1px solid #000; vertical-align: top;">
+                                    <div style="text-align:center; font-weight:bold; text-decoration:underline; margin-bottom:5px;">รายงานผลการตรวจรับ</div>
+                                    จาก คณะกรรมการตรวจรับ<br>
+                                    เรียน ผจก.กฟจ.นพ.<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;คณะกรรมการฯ ได้ตรวจรับน้ำมันเชื้อเพลิงถูกต้อง ครบถ้วนแล้ว เมื่อวัน<br>ที่...................................................<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;จึงเรียนมาเพื่อโปรดอนุมัติจ่ายเงิน จำนวน <b>${totalAll.toFixed(2)}</b> บาท (รวมภาษีมูลค่าเพิ่ม)<br>ต่อไปด้วย จะขอบคุณยิ่ง<br><br>
+                                    <div style="margin-left: 15%; line-height: 1.8;">
+                                        ................................................ ประธานกรรมการ<br>
+                                        ................................................ กรรมการ<br>
+                                        ................................................ กรรมการ<br>
+                                    </div>
+                                    <hr style="border-top:1.5px solid #000; margin: 10px 0;">
+                                    ได้รับของจากคณะกรรมการตรวจรับเพื่อใช้งานแล้ว เมื่อวัน<br>ที่...................................................<br><br>
+                                    <div style="text-align:center; line-height: 1.4;">
+                                        ลงชื่อ................................................ ผู้รับของ<br>
+                                        (......................................................................)<br>
+                                    </div>
+                                </td>
+                                <td style="width:50%; padding:10px 15px; vertical-align: top;">
+                                    <b>อนุมัติจ่ายเงินให้ธนาคาร กรุงไทย จำกัด (มหาชน) สาขานครพนม เป็นจำนวน<br>เงินทั้งสิ้น &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${totalAll.toFixed(2)} บาท (รวมภาษีมูลค่าเพิ่ม)</b><br><br><br><br><br><br><br><br>
+                                    <div style="text-align:center; line-height: 1.4;">
+                                        ลงชื่อ......................................................................<br>
+                                        (......................................................................)<br>
+                                        ตำแหน่ง......................................................................<br>
+                                        วันที่ .......... / .................... / ...........
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+            }
+
+            window.print();
         }
 
         // ==========================================
@@ -296,6 +692,7 @@
 
             pageData.forEach(f => {
                 const formattedDate = formatDisplayDate(f.date); const debtBadge = f.isDebt ? `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว</span>` : `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
+                
                 let docHtml = ''; if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> บิล</a><br>`; if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> ยพ.</a>`; if(!docHtml) docHtml = '-';
                 
                 let actionHtml = `<button class="btn btn-warning btn-sm" style="padding: 6px 10px;" onclick="openFuelModal('edit', '${f.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" style="padding: 6px 10px;" onclick="deleteFuel('${f.id}')"><i class="fas fa-trash"></i></button>`;
@@ -342,11 +739,22 @@
         async function submitBudget() {
             const id = document.getElementById('budget-fuel-id').value;
             const budgetVal = document.getElementById('budget-value').value;
-            document.getElementById('submitBudgetBtn').disabled = true; document.getElementById('submitBudgetBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
+            
+            document.getElementById('submitBudgetBtn').disabled = true;
+            document.getElementById('submitBudgetBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
+            
             try { 
                 const res = await apiCall({ action: 'save_fuel_budget', id: id, budget: budgetVal }); 
-                if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('budgetModal').style.display = 'none'; await fetchFuelsData(); filterFuelTable(); } 
-            } catch(e) {} finally { document.getElementById('submitBudgetBtn').disabled = false; document.getElementById('submitBudgetBtn').innerHTML = 'บันทึกเลขงบ'; }
+                if(res.status === 'success') { 
+                    Swal.fire('สำเร็จ', res.message, 'success'); 
+                    document.getElementById('budgetModal').style.display = 'none';
+                    await fetchFuelsData(); filterFuelTable(); 
+                } 
+            } catch(e) {} 
+            finally { 
+                document.getElementById('submitBudgetBtn').disabled = false;
+                document.getElementById('submitBudgetBtn').innerHTML = 'บันทึกเลขงบ';
+            }
         }
 
         function markDebt(id) { Swal.fire({ title: 'ยืนยันการตั้งหนี้?', text: "ต้องการเปลี่ยนสถานะรายการนี้เป็น 'ตั้งหนี้แล้ว' ใช่หรือไม่?", icon: 'info', showCancelButton: true, confirmButtonColor: '#10B981', confirmButtonText: 'ตั้งหนี้เลย' }).then(async (result) => { if (result.isConfirmed) { try { const res = await apiCall({ action: 'mark_fuel_debt', id: id }); if(res.status === 'success') { Swal.fire('สำเร็จ', '', 'success'); await fetchFuelsData(); filterFuelTable(); } } catch(e) {} } }); }
@@ -354,8 +762,32 @@
         function openFuelModal(mode, id = null) {
             document.getElementById('fuelModal').style.display = 'flex'; const user = JSON.parse(localStorage.getItem('user_session')); const canManageDebt = (user.role === 'Admin' || user.role === 'ผู้ช่วย Admin');
             const selectSangkat = document.getElementById('fuel-sangkat'); const uniqueSangkat = [...new Set(currentCarsList.map(c => c.sangkat))]; selectSangkat.innerHTML = '<option value="">- เลือกสังกัด -</option>'; uniqueSangkat.forEach(s => selectSangkat.add(new Option(s, s)));
-            if(mode === 'add') { document.getElementById('fuelModalTitle').innerText = 'บันทึกข้อมูลเติมน้ำมัน'; document.getElementById('fuel-id').value = ''; document.getElementById('fuel-debt-container').style.display = 'none'; ['fuel-sangkat','fuel-phanek','fuel-plate','fuel-brand','fuel-type','fuel-mile','fuel-type-oil','fuel-station','fuel-tax-invoice','fuel-price','fuel-quantity','fuel-total','fuel-book','fuel-no','fuel-network','fuel-wbs'].forEach(el => document.getElementById(el).value = ''); document.getElementById('fuel-subtotal').innerText = '0.00'; document.getElementById('fuel-vat').innerText = '0.00'; document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = ''; document.getElementById('fuel-is-debt').checked = false; document.getElementById('req-receipt').innerHTML = '* บังคับ'; document.getElementById('req-yp').innerHTML = '* บังคับ';
-            } else if (id) { document.getElementById('fuelModalTitle').innerText = 'แก้ไขรายการเติมน้ำมัน'; document.getElementById('fuel-debt-container').style.display = canManageDebt ? 'flex' : 'none'; const f = currentFuelsList.find(item => item.id === id); if(f) { document.getElementById('fuel-id').value = f.id; document.getElementById('fuel-is-debt').checked = f.isDebt; document.getElementById('fuel-sangkat').value = f.sangkat; updateFuelPhanek(); document.getElementById('fuel-phanek').value = f.phanek; updateFuelPlate(); document.getElementById('fuel-plate').value = f.plate; autoFillFuelCarDetails(); document.getElementById('fuel-mile').value = f.mile; document.getElementById('fuel-type-oil').value = f.fuelType; document.getElementById('fuel-station').value = f.station; document.getElementById('fuel-tax-invoice').value = f.taxInvoice; document.getElementById('fuel-price').value = f.price; document.getElementById('fuel-quantity').value = f.quantity; document.getElementById('fuel-total').value = f.totalAmount; recalculateVatFromTotal(); document.getElementById('fuel-book').value = f.bookNo; document.getElementById('fuel-no').value = f.docNo; document.getElementById('fuel-network').value = f.network; document.getElementById('fuel-wbs').value = f.wbs; document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = ''; document.getElementById('req-receipt').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; document.getElementById('req-yp').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; } }
+            if(mode === 'add') {
+                document.getElementById('fuelModalTitle').innerText = 'บันทึกข้อมูลเติมน้ำมัน'; document.getElementById('fuel-id').value = '';
+                document.getElementById('fuel-debt-container').style.display = 'none';
+                ['fuel-sangkat','fuel-phanek','fuel-plate','fuel-brand','fuel-type','fuel-mile','fuel-type-oil','fuel-station','fuel-tax-invoice','fuel-price','fuel-quantity','fuel-total','fuel-book','fuel-no','fuel-network','fuel-wbs'].forEach(el => document.getElementById(el).value = '');
+                document.getElementById('fuel-subtotal').innerText = '0.00'; document.getElementById('fuel-vat').innerText = '0.00';
+                document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = ''; document.getElementById('fuel-is-debt').checked = false; 
+                document.getElementById('req-receipt').innerHTML = '* บังคับ'; document.getElementById('req-yp').innerHTML = '* บังคับ';
+            } else if (id) {
+                document.getElementById('fuelModalTitle').innerText = 'แก้ไขรายการเติมน้ำมัน'; 
+                document.getElementById('fuel-debt-container').style.display = canManageDebt ? 'flex' : 'none';
+                const f = currentFuelsList.find(item => item.id === id);
+                if(f) {
+                    document.getElementById('fuel-id').value = f.id; document.getElementById('fuel-is-debt').checked = f.isDebt;
+                    document.getElementById('fuel-sangkat').value = f.sangkat; updateFuelPhanek();
+                    document.getElementById('fuel-phanek').value = f.phanek; updateFuelPlate();
+                    document.getElementById('fuel-plate').value = f.plate; autoFillFuelCarDetails();
+                    document.getElementById('fuel-mile').value = f.mile; document.getElementById('fuel-type-oil').value = f.fuelType;
+                    document.getElementById('fuel-station').value = f.station; document.getElementById('fuel-tax-invoice').value = f.taxInvoice;
+                    document.getElementById('fuel-price').value = f.price; document.getElementById('fuel-quantity').value = f.quantity;
+                    document.getElementById('fuel-total').value = f.totalAmount; recalculateVatFromTotal();
+                    document.getElementById('fuel-book').value = f.bookNo; document.getElementById('fuel-no').value = f.docNo;
+                    document.getElementById('fuel-network').value = f.network; document.getElementById('fuel-wbs').value = f.wbs;
+                    document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = '';
+                    document.getElementById('req-receipt').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; document.getElementById('req-yp').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)';
+                }
+            }
         }
         function updateFuelPhanek() { const val = document.getElementById('fuel-sangkat').value; const select = document.getElementById('fuel-phanek'); select.innerHTML = '<option value="">- เลือกแผนก -</option>'; document.getElementById('fuel-plate').innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('fuel-brand').value = ''; document.getElementById('fuel-type').value = ''; if(val) [...new Set(currentCarsList.filter(c => c.sangkat === val).map(c => c.phanek))].forEach(p => select.add(new Option(p, p))); }
         function updateFuelPlate() { const s = document.getElementById('fuel-sangkat').value; const p = document.getElementById('fuel-phanek').value; const select = document.getElementById('fuel-plate'); select.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('fuel-brand').value = ''; document.getElementById('fuel-type').value = ''; if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => select.add(new Option(c.plate, c.plate))); }
@@ -372,191 +804,6 @@
         function openUserModal(mode, empId = null) { document.getElementById('userModal').style.display = 'flex'; if(mode === 'add') { document.getElementById('userModalTitle').innerText = 'เพิ่มผู้ใช้ใหม่'; document.getElementById('userOriginalEmpId').value = ''; ['userEmpId','userName','userDept'].forEach(el => document.getElementById(el).value = ''); document.getElementById('userRole').value = 'User'; } else if (empId) { document.getElementById('userModalTitle').innerText = 'แก้ไขผู้ใช้'; const u = currentUsersList.find(item => item.empId.toString() === empId.toString()); if(u) { document.getElementById('userOriginalEmpId').value = u.empId; document.getElementById('userEmpId').value = u.empId; document.getElementById('userName').value = u.name; document.getElementById('userDept').value = u.department; document.getElementById('userRole').value = u.role; } } }
         async function saveUser() { const originalEmpId = document.getElementById('userOriginalEmpId').value; const empId = document.getElementById('userEmpId').value; const name = document.getElementById('userName').value; const dept = document.getElementById('userDept').value; const role = document.getElementById('userRole').value; if(!empId || !name) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสและชื่อ', 'warning'); const payload = { action: originalEmpId ? 'edit_user' : 'add_user', originalEmpId: originalEmpId, empId: empId, name: name, department: dept, role: role }; document.getElementById('saveUserBtn').disabled = true; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('userModal').style.display = 'none'; loadPage('user-settings'); } else { Swal.fire('ผิดพลาด', res.message, 'error'); } } catch(e) {} finally { document.getElementById('saveUserBtn').disabled = false; } }
         function deleteUser(empId) { if(empId.toString() === JSON.parse(localStorage.getItem('user_session')).empId.toString()) return Swal.fire('ปฏิเสธ', 'ไม่สามารถลบบัญชีตัวเองขณะเข้าสู่ระบบได้', 'error'); Swal.fire({ title: 'ลบข้อมูลผู้ใช้?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'ลบเลย!' }).then(async (result) => { if (result.isConfirmed) { try { const res = await apiCall({ action: 'delete_user', empId: empId }); if(res.status === 'success') { Swal.fire('ลบแล้ว', '', 'success'); loadPage('user-settings'); } else { Swal.fire('ผิดพลาด', res.message, 'error'); } } catch(e) {} } }); }
-
-        // ==========================================
-        // REPORT / PRINT PDF PAGE
-        // ==========================================
-        async function renderReportPage(container) {
-            if(currentFuelsList.length === 0) await fetchFuelsData();
-            const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-
-            container.innerHTML = `
-                <div class="page-title" style="color: var(--success);"><i class="fas fa-print"></i> พิมพ์รายงาน / บันทึกข้อความ (PDF)</div>
-                <div class="form-box">
-                    <div class="flex-row">
-                        <div class="input-group flex-col"><label>ตั้งแต่วันที่</label><input type="date" id="rep-start" value="${firstDay}"></div>
-                        <div class="input-group flex-col"><label>ถึงวันที่</label><input type="date" id="rep-end" value="${lastDay}"></div>
-                    </div>
-                    <div class="flex-row">
-                        <div class="input-group flex-col"><label>สังกัด</label><select id="rep-sangkat" onchange="updateRepPhanek()"><option value="">- เลือกสังกัด -</option></select></div>
-                        <div class="input-group flex-col"><label>แผนก</label><select id="rep-phanek" onchange="updateRepPlate()"><option value="">- เลือกแผนก -</option></select></div>
-                        <div class="input-group flex-col"><label>เลือกทะเบียนรถ</label><select id="rep-plate"><option value="">- เลือกทะเบียนรถ -</option></select></div>
-                    </div>
-                    <div class="input-group">
-                        <label>เลือกแบบฟอร์ม</label>
-                        <select id="rep-type">
-                            <option value="1">ฟอร์ม 1: รายการใช้น้ำมันเชื้อเพลิง (ตารางการเติมน้ำมัน)</option>
-                            <option value="2">ฟอร์ม 2: บันทึกข้อความขออนุมัติเบิก กฟภ. (ตั้งเบิกค่าน้ำมัน)</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-success" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" onclick="generateReportPDF()"><i class="fas fa-file-pdf"></i> สร้างรายงาน & พิมพ์ PDF</button>
-                    <p style="text-align:center; font-size:12px; color:var(--text-light); margin-top:10px;">* ระบบจะเปิดหน้าต่าง Print ของเบราว์เซอร์ ให้เลือก Destination เป็น "Save as PDF" เพื่อบันทึกเป็นไฟล์</p>
-                </div>
-            `;
-            const selectRepSangkat = document.getElementById('rep-sangkat');
-            [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => selectRepSangkat.add(new Option(s, s)));
-            updateRepPhanek(); 
-        }
-
-        function updateRepPhanek() {
-            const s = document.getElementById('rep-sangkat').value; const selectP = document.getElementById('rep-phanek'); const selectPl = document.getElementById('rep-plate');
-            selectP.innerHTML = '<option value="">- เลือกแผนก -</option>'; selectPl.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>';
-            let filtered = currentCarsList; if(s) filtered = filtered.filter(c => c.sangkat === s);
-            [...new Set(filtered.map(c => c.phanek))].forEach(p => selectP.add(new Option(p, p))); [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl)));
-        }
-
-        function updateRepPlate() {
-            const s = document.getElementById('rep-sangkat').value; const p = document.getElementById('rep-phanek').value; const selectPl = document.getElementById('rep-plate');
-            selectPl.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; let filtered = currentCarsList;
-            if(s) filtered = filtered.filter(c => c.sangkat === s); if(p) filtered = filtered.filter(c => c.phanek === p);
-            [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl)));
-        }
-
-        function generateReportPDF() {
-            const startDateStr = document.getElementById('rep-start').value; const endDateStr = document.getElementById('rep-end').value;
-            const type = document.getElementById('rep-type').value; const plate = document.getElementById('rep-plate').value;
-
-            if(!startDateStr || !endDateStr) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกช่วงวันที่ให้ครบ', 'warning');
-            if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถด้วยครับ เพื่อให้ออกฟอร์มได้ถูกต้อง', 'warning');
-
-            const startD = new Date(startDateStr); startD.setHours(0,0,0,0); const endD = new Date(endDateStr); endD.setHours(23,59,59,999);
-
-            let filteredData = currentFuelsList.filter(f => {
-                if(!f.date) return false; let d = new Date(f.date);
-                if(isNaN(d)) { const parts = f.date.split(' ')[0].split('/'); if(parts.length===3) d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
-                return d >= startD && d <= endD;
-            });
-
-            filteredData.sort((a, b) => {
-                let dA = new Date(a.date); if(isNaN(dA)){ const p=a.date.split(' ')[0].split('/'); dA=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
-                let dB = new Date(b.date); if(isNaN(dB)){ const p=b.date.split(' ')[0].split('/'); dB=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
-                return dA - dB;
-            });
-
-            const carData = filteredData.filter(f => f.plate === plate); const carInfo = currentCarsList.find(c => c.plate === plate);
-            if(carData.length === 0) return Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลการเติมน้ำมันของรถคันนี้ในช่วงเวลาที่เลือก', 'info');
-
-            const printSection = document.getElementById('print-section');
-            const monthNames = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-            const reportMonth = `${monthNames[endD.getMonth()]} ${endD.getFullYear()+543}`;
-
-            if(type === '1') {
-                let totalLiter = 0; let totalCost = 0; let totalDistance = 0;
-                let trueFirstMile = '';
-                let allSorted = currentFuelsList.filter(x => x.plate === plate).sort((a, b) => {
-                    let dA = new Date(a.date); if(isNaN(dA)){ const p=a.date.split(' ')[0].split('/'); dA=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
-                    let dB = new Date(b.date); if(isNaN(dB)){ const p=b.date.split(' ')[0].split('/'); dB=new Date(`${p[2]}-${p[1]}-${p[0]}`); }
-                    return dA - dB;
-                });
-                let firstIndex = allSorted.findIndex(f => f.id === carData[0].id);
-                if(firstIndex > 0) { trueFirstMile = parseFloat(allSorted[firstIndex - 1].mile) || ''; }
-                
-                let tableRows = `<tr>
-                    <td></td><td></td><td></td><td></td><td></td><td style="text-align:center;">ยกมา</td>
-                    <td>${trueFirstMile !== '' ? trueFirstMile : ''}</td><td></td><td></td><td></td><td></td>
-                </tr>`;
-                
-                let prevM = trueFirstMile;
-                carData.forEach((f, idx) => {
-                    let dText = '';
-                    if(f.date) {
-                        let d = new Date(f.date); if(isNaN(d)) { const p = f.date.split(' ')[0].split('/'); d = new Date(`${p[2]}-${p[1]}-${p[0]}`); }
-                        dText = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${(d.getFullYear()+543).toString().slice(-2)}'`;
-                    }
-                    const q = parseFloat(f.quantity) || 0; const c = parseFloat(f.totalAmount) || 0; const m = parseFloat(f.mile) || 0;
-                    let dist = '';
-                    if (prevM !== '' && m >= prevM) { dist = m - prevM; } else if (idx > 0) { let lastM = parseFloat(carData[idx-1].mile) || 0; if(m >= lastM) dist = m - lastM; }
-                    
-                    totalLiter += q; totalCost += c; if(dist !== '') totalDistance += dist;
-                    let avg = (dist !== '' && q > 0) ? (dist / q).toFixed(2) : '';
-                    let docText = f.docNo || ''; let budgetText = f.budget || ''; let stationText = f.station || '';
-
-                    tableRows += `<tr>
-                        <td>${dText}</td><td>${docText}</td>
-                        <td>${q > 0 ? q.toFixed(2) : ''}</td><td>${c > 0 ? c.toFixed(2) : ''}</td>
-                        <td></td><td></td>
-                        <td>${m || ''}</td><td>${budgetText}</td><td>${dist || ''}</td><td>${avg}</td>
-                        <td style="text-align:center;">${stationText}</td>
-                    </tr>`;
-                    prevM = m;
-                });
-                
-                let totalAvg = (totalDistance > 0 && totalLiter > 0) ? (totalDistance / totalLiter).toFixed(2) : '';
-
-                printSection.innerHTML = `
-                    <div style="font-family: 'Sarabun', sans-serif;">
-                        <div class="print-title" style="margin-bottom: 5px;">รายการใช้น้ำมันเชื้อเพลิงและน้ำมันหล่อลื่น</div>
-                        <div class="print-title" style="font-weight: normal; margin-bottom: 15px;">ประจำเดือน ${reportMonth}</div>
-                        <div style="font-size: 14px; margin-bottom: 10px; font-weight: bold; text-align: center;">ชื่อผู้ใช้รถ ........................................................................ ตำแหน่ง ........................................................................</div>
-                        <div style="font-size: 14px; margin-bottom: 15px; font-weight: bold; text-align: center; display: flex; justify-content: center; gap: 20px;">
-                            <span>รถยี่ห้อ ${carInfo ? carInfo.brand : ''}</span><span>ประเภท ${carInfo ? carInfo.type : ''}</span>
-                            <span>ทะเบียน ${plate}</span><span>สังกัด ${carInfo ? carInfo.sangkat : ''}</span>
-                        </div>
-                        <table class="print-table" style="margin-top:15px; font-size: 12px;">
-                            <thead>
-                                <tr>
-                                    <th rowspan="3" style="width:7%;">ว.ด.ป</th><th rowspan="3" style="width:10%;">เลขที่<br>ใบสั่งจ่าย</th>
-                                    <th colspan="4" style="border-bottom: 1px solid #000;">น้ำมันที่ใช้</th>
-                                    <th rowspan="3" style="width:9%;">เลข กม.<br>ที่เบิกเติม</th><th rowspan="3" style="width:9%;">งบ</th>
-                                    <th rowspan="3" style="width:8%;">ระยะทาง</th><th rowspan="3" style="width:8%;">เฉลี่ย<br>กม./ลิตร</th><th rowspan="3" style="width:15%; text-align:center;">หมายเหตุ</th>
-                                </tr>
-                                <tr><th colspan="2">เบนซิน/ดีเซล</th><th colspan="2">หล่อลื่น</th></tr>
-                                <tr><th style="width:6%;">ลิตร</th><th style="width:8%;">เป็นเงิน</th><th style="width:6%;">ลิตร</th><th style="width:8%;">เป็นเงิน</th></tr>
-                            </thead>
-                            <tbody>
-                                ${tableRows}
-                                <tr style="font-weight:bold; background:#f9f9f9;"><td colspan="2">รวม</td><td>${totalLiter > 0 ? totalLiter.toFixed(2) : ''}</td><td>${totalCost > 0 ? totalCost.toFixed(2) : ''}</td><td></td><td></td><td></td><td></td><td>${totalDistance > 0 ? totalDistance : ''}</td><td>${totalAvg}</td><td></td></tr>
-                            </tbody>
-                        </table>
-                        <div class="print-sign-area" style="justify-content: space-between; margin-top: 40px; padding: 0 20px;">
-                            <div style="width: 45%; text-align: center;"><div class="print-sign-line" style="width: 80%; margin: 0 auto;"></div>(.........................................................................)<br>หัวหน้าหน่วยงานที่มีหน้าที่ควบคุมดูแลยานพาหนะ<br><span style="font-size: 12px; font-weight: normal;">ถ้ามีเหตุผลที่จะชี้แจงเกี่ยวกับการใช้น้ำมันมากเกินกว่าเหตุในรอบเดือน (ให้ชี้แจงประกอบ)</span></div>
-                            <div style="width: 45%; text-align: center;"><div class="print-sign-line" style="width: 80%; margin: 0 auto;"></div>ผจก.กฟจ.นพ.<br>วันที่ .......... / .................... / ...........</div>
-                        </div>
-                    </div>
-                `;
-
-            } else {
-                let totalSub = 0; let totalVat = 0; let totalAll = 0; let tableRows = '';
-                carData.forEach((f, index) => {
-                    let dText = '';
-                    if(f.date) { let d = new Date(f.date); if(isNaN(d)) { const p = f.date.split(' ')[0].split('/'); d = new Date(`${p[2]}-${p[1]}-${p[0]}`); } dText = `${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()+543}`; }
-                    const t = parseFloat(f.totalAmount) || 0; const sub = (t * 100) / 107; const vat = (t * 7) / 107;
-                    totalSub += sub; totalVat += vat; totalAll += t;
-                    tableRows += `<tr><td>${index + 1}</td><td>${dText}</td><td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td><td>✓</td><td></td><td>ทำการ</td><td>${f.wbs || ''}</td></tr>`;
-                });
-                const carTypeStr = carInfo ? carInfo.type : ''; const carDeptStr = carInfo ? `${carInfo.phanek} ${carInfo.sangkat}` : '';
-                printSection.innerHTML = `
-                    <div style="font-family: 'Sarabun', sans-serif;">
-                        <div style="display:flex; align-items:center; margin-bottom:20px;"><h2 style="margin:0; font-weight:bold;">บันทึกข้อความ (การไฟฟ้าส่วนภูมิภาค)</h2></div>
-                        <div style="font-size:14px; line-height: 1.6; margin-bottom: 15px;"><b>ส่วนราชการ</b> ........................................................................................<br><b>ที่</b> ...................................................... <b>วันที่</b> ....................................<br><b>เรื่อง</b> อนุมัติสั่งซื้อ อนุมัติจ่ายเงินค่าน้ำมันเชื้อเพลิง โดยวิธีเฉพาะเจาะจง ด้วยการใช้บัตรเครดิตน้ำมัน และรายงานผลการตรวจรับ<br><b>เรียน</b> ผจก........................</div>
-                        <p style="font-size:14px; text-indent: 40px; margin-bottom:10px; line-height: 1.6;">ตามความเห็นชอบและอนุมัติรายงานขอซื้อขอจ้างน้ำมันเชื้อเพลิง มีความประสงค์จัดซื้อน้ำมันเชื้อเพลิง สำหรับรถยนต์ทะเบียน <b>${plate}</b> ประเภท <b>${carTypeStr}</b> ประจำ <b>${carDeptStr}</b> ประจำเดือน <b>${reportMonth}</b> เพื่อใช้ในการปฏิบัติงาน จากสถานีบริการน้ำมันภายใต้การให้บริการ โดยบัตรเครดิตน้ำมัน มีรายละเอียดดังนี้</p>
-                        <table class="print-table">
-                            <thead><tr><th rowspan="2">ลำดับ</th><th rowspan="2">วันที่</th><th rowspan="2">ค่าน้ำมัน<br>(ก่อน VAT)</th><th rowspan="2">ภาษีมูลค่าเพิ่ม</th><th rowspan="2">รวมเป็นเงิน<br>(รวมภาษี)</th><th colspan="2">เครดิตภาษี</th><th rowspan="2">งบ</th><th rowspan="2">ศูนย์ต้นทุน/WBS/โครงข่าย</th></tr><tr><th>ได้</th><th>ไม่ได้</th></tr></thead>
-                            <tbody>${tableRows}<tr style="font-weight:bold; background:#f9f9f9;"><td colspan="2" style="text-align:center;">รวมเป็นเงินทั้งสิ้น</td><td style="text-align:right;">${totalSub.toFixed(2)}</td><td style="text-align:right;">${totalVat.toFixed(2)}</td><td style="text-align:right; color:red;">${totalAll.toFixed(2)}</td><td colspan="4"></td></tr></tbody>
-                        </table>
-                        <table style="width:100%; border:1px solid #000; border-collapse: collapse; margin-top:20px; font-size:14px;">
-                            <tr>
-                                <td style="width:50%; padding:15px; border-right:1px solid #000; vertical-align: top;">จึงเรียนมาเพื่อโปรดอนุมัติสั่งซื้อน้ำมันเชื้อเพลิง จากบริษัท ปตท.จำกัด (มหาชน) ต่อไปด้วย จะขอบคุณยิ่ง<br><br><br><div style="text-align:center;">ลงชื่อ................................................<br>(................................................)<br>ตำแหน่ง........................................</div></td>
-                                <td style="width:50%; padding:15px; vertical-align: top;"><b>อนุมัติสั่งซื้อน้ำมันเชื้อเพลิง เป็นจำนวนเงินทั้งสิ้น ${totalAll.toFixed(2)} บาท</b><br><br><br><div style="text-align:center;">ลงชื่อ................................................<br>(................................................)<br>ตำแหน่ง........................................</div></td>
-                            </tr>
-                        </table>
-                    </div>
-                `;
-            }
-            window.print();
-        }
 
         // ==========================================
         // OTHER PAGES
