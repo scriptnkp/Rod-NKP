@@ -1,6 +1,6 @@
 <!-- ========================================== -->
 <!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (Final Form 2 Blank Signatures)-->
+<!-- Role: Frontend Full (Final Form 2 & Debt Num) -->
 <!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -112,7 +112,6 @@
         #print-section { display: none; }
         @media print {
             body * { visibility: hidden !important; }
-            /* บังคับใช้ฟอนต์ Sarabun ทั้งหมดในหน้า Print */
             #print-section, #print-section * { visibility: visible !important; font-family: 'Sarabun', sans-serif !important; color: #000; }
             #print-section { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background: white; }
             #dashboard-screen { display: none !important; }
@@ -500,7 +499,7 @@
 
             } else {
                 // ==========================================
-                // ฟอร์ม 2: บันทึกข้อความเบิก กฟภ.
+                // ฟอร์ม 2: บันทึกข้อความเบิก กฟภ. (อัปเดตโลโก้ + ลบเครื่องหมายในเครดิตภาษี + ตารางส่วนท้ายเว้นว่างให้ปั๊มตรายาง)
                 // ==========================================
                 let totalSub = 0; let totalVat = 0; let totalAll = 0; let tableRows = '';
                 carData.forEach((f, index) => {
@@ -514,6 +513,7 @@
                     
                     let budgetOrWbs = f.budget || f.wbs || '';
                     
+                    // นำเครื่องหมายติ๊กถูกช่องเครดิตภาษีออก ปล่อยว่างไว้
                     tableRows += `<tr>
                         <td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td>
                         <td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td>
@@ -527,6 +527,7 @@
                 printSection.innerHTML = `
                     <div style="font-family: 'Sarabun', sans-serif;">
                         <div style="display:flex; align-items:center; margin-bottom:10px;">
+                            <!-- ใส่โลโก้ กฟภ. ตามลิงก์ที่ให้มา ปรับขนาดให้เหมาะสม ไม่โดนตัด -->
                             <img src="https://images2.imgbox.com/b3/4f/rQUZ8OAA_o.png" onerror="this.style.display='none'; document.getElementById('fallback-title').style.display='block';" style="max-height: 80px; width: auto; object-fit: contain; margin-right:15px;">
                             <h2 id="fallback-title" style="margin:0; font-weight:bold; font-size:22px; display:none;">บันทึกข้อความ (การไฟฟ้าส่วนภูมิภาค)</h2>
                         </div>
@@ -537,7 +538,7 @@
                                 <div style="width: 50%;"><b>ถึง</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ผจก.กฟจ.นครพนม</div>
                             </div>
                             <div style="display: flex;">
-                                <div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;ฉ.1.นพ.(กส.) -</div>
+                                <div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;ฉ.1.นพ(กส.) -</div>
                                 <div style="width: 50%;"><b>วันที่</b></div>
                             </div>
                             <div style="display: flex;">
@@ -578,7 +579,7 @@
                             </tbody>
                         </table>
                         
-                        <!-- ตารางส่วนท้าย 4 ช่อง ว่างไว้สำหรับปั๊มตรายาง -->
+                        <!-- ตารางส่วนท้าย 4 ช่อง (ลบชื่อและตำแหน่งออกให้ว่างไว้สำหรับปั๊มตรายาง) -->
                         <table style="width:100%; border:1px solid #000; border-top: none; border-collapse: collapse; font-size:13px;">
                             <tr>
                                 <td style="width:50%; padding:10px 15px; border-right:1px solid #000; border-bottom:1px solid #000; vertical-align: top;">
@@ -612,6 +613,7 @@
                                         ................................................ กรรมการ<br>
                                         ................................................ กรรมการ<br>
                                     </div>
+                                    <!-- ปรับเส้นคั่นให้หนาขึ้น (1.5px) -->
                                     <hr style="border-top:1.5px solid #000; margin: 10px 0;">
                                     ได้รับของจากคณะกรรมการตรวจรับเพื่อใช้งานแล้ว เมื่อวัน<br>ที่...................................................<br><br>
                                     <div style="text-align:center; line-height: 1.4;">
@@ -691,7 +693,8 @@
             const start = (page - 1) * FUEL_ITEMS_PER_PAGE; const end = start + FUEL_ITEMS_PER_PAGE; const pageData = currentFilteredFuels.slice(start, end);
 
             pageData.forEach(f => {
-                const formattedDate = formatDisplayDate(f.date); const debtBadge = f.isDebt ? `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว</span>` : `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
+                const formattedDate = formatDisplayDate(f.date); 
+                const debtBadge = f.isDebt ? `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว ${f.debtNo && f.debtNo !== '-' ? '('+f.debtNo+')' : ''}</span>` : `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
                 
                 let docHtml = ''; if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> บิล</a><br>`; if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> ยพ.</a>`; if(!docHtml) docHtml = '-';
                 
@@ -739,25 +742,32 @@
         async function submitBudget() {
             const id = document.getElementById('budget-fuel-id').value;
             const budgetVal = document.getElementById('budget-value').value;
-            
-            document.getElementById('submitBudgetBtn').disabled = true;
-            document.getElementById('submitBudgetBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
-            
+            document.getElementById('submitBudgetBtn').disabled = true; document.getElementById('submitBudgetBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
             try { 
                 const res = await apiCall({ action: 'save_fuel_budget', id: id, budget: budgetVal }); 
-                if(res.status === 'success') { 
-                    Swal.fire('สำเร็จ', res.message, 'success'); 
-                    document.getElementById('budgetModal').style.display = 'none';
-                    await fetchFuelsData(); filterFuelTable(); 
-                } 
-            } catch(e) {} 
-            finally { 
-                document.getElementById('submitBudgetBtn').disabled = false;
-                document.getElementById('submitBudgetBtn').innerHTML = 'บันทึกเลขงบ';
-            }
+                if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('budgetModal').style.display = 'none'; await fetchFuelsData(); filterFuelTable(); } 
+            } catch(e) {} finally { document.getElementById('submitBudgetBtn').disabled = false; document.getElementById('submitBudgetBtn').innerHTML = 'บันทึกเลขงบ'; }
         }
 
-        function markDebt(id) { Swal.fire({ title: 'ยืนยันการตั้งหนี้?', text: "ต้องการเปลี่ยนสถานะรายการนี้เป็น 'ตั้งหนี้แล้ว' ใช่หรือไม่?", icon: 'info', showCancelButton: true, confirmButtonColor: '#10B981', confirmButtonText: 'ตั้งหนี้เลย' }).then(async (result) => { if (result.isConfirmed) { try { const res = await apiCall({ action: 'mark_fuel_debt', id: id }); if(res.status === 'success') { Swal.fire('สำเร็จ', '', 'success'); await fetchFuelsData(); filterFuelTable(); } } catch(e) {} } }); }
+        function markDebt(id) { 
+            Swal.fire({ 
+                title: 'ระบุเลขตั้งหนี้', 
+                input: 'text',
+                inputPlaceholder: 'กรอกเลขตั้งหนี้ (ถ้ามี)',
+                showCancelButton: true, 
+                confirmButtonColor: '#10B981', 
+                confirmButtonText: 'บันทึกตั้งหนี้',
+                cancelButtonText: 'ยกเลิก'
+            }).then(async (result) => { 
+                if (result.isConfirmed) { 
+                    const debtNo = result.value || '-';
+                    try { 
+                        const res = await apiCall({ action: 'mark_fuel_debt', id: id, debtNo: debtNo }); 
+                        if(res.status === 'success') { Swal.fire('สำเร็จ', '', 'success'); await fetchFuelsData(); filterFuelTable(); } 
+                    } catch(e) {} 
+                } 
+            }); 
+        }
 
         function openFuelModal(mode, id = null) {
             document.getElementById('fuelModal').style.display = 'flex'; const user = JSON.parse(localStorage.getItem('user_session')); const canManageDebt = (user.role === 'Admin' || user.role === 'ผู้ช่วย Admin');
