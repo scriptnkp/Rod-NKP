@@ -1,14 +1,9 @@
-<!-- ========================================== -->
-<!-- File: index.html (Hosted on GitHub Pages)  -->
-<!-- Role: Frontend Full (Update Form 2 & Badge UI)-->
-<!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจัดการรถองค์กร</title>
-    <!-- เพิ่มฟอนต์ Sarabun เข้ามาสำหรับหน้ารายงาน -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -58,6 +53,12 @@
         .stat-info h3 { font-size: 24px; color: var(--text); margin: 0 0 4px 0; line-height: 1; }
         .stat-info p { font-size: 13px; color: var(--text-light); margin: 0; }
         
+        /* สไตล์สำหรับกล่องที่กดได้ */
+        .stat-card.clickable { cursor: pointer; transition: 0.3s; }
+        .stat-card.clickable:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+        .stat-card.clickable.success:hover { border-color: var(--success); }
+        .stat-card.clickable.warning:hover { border-color: var(--warning); }
+
         .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 24px;}
         .action-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .action-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 6px 12px rgba(99,102,241,0.1); }
@@ -68,7 +69,7 @@
         .use-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.3s; }
         .use-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 12px; }
         .use-card-plate { font-size: 18px; font-weight: 600; color: var(--primary); }
-        .use-card-badge { background: #FEF3C7; color: #D97706; font-size: 13px; padding: 4px 8px; border-radius: 20px; font-weight: 600; }
+        .use-card-badge { background: #FEF3C7; color: #D97706; font-size: 12px; padding: 4px 8px; border-radius: 20px; font-weight: 600; }
 
         .table-container { background: var(--surface); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; width: 100%; border: 1px solid var(--border); }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 950px; }
@@ -78,9 +79,9 @@
         .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
         .page-btn { padding: 8px 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: 500; }
         .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .badge-debt { background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-block; margin-top: 4px;}
-        .badge-nodebt { background: #F3F4F6; color: var(--text-light); padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-block; margin-top: 4px;}
-        .badge-budget { background: #E0E7FF; color: #3730A3; padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-block; margin-top: 4px; border: 1px dashed #6366F1;}
+        .badge-debt { background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; margin-top: 4px; line-height: 1.4;}
+        .badge-nodebt { background: #F3F4F6; color: var(--text-light); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; margin-top: 4px;}
+        .badge-budget { background: #E0E7FF; color: #3730A3; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; margin-top: 4px; border: 1px dashed #6366F1;}
 
         /* Layout */
         #login-screen { width: 100%; display: flex; justify-content: center; align-items: center; }
@@ -91,7 +92,7 @@
         .nav-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--primary); font-weight: 600; font-size: 18px; transition: 0.2s; }
         .nav-brand:hover { color: var(--primary-hover); opacity: 0.8; }
         @media (max-width: 500px) { .nav-brand-text { display: none; } }
-        .user-profile { font-size: 15px; font-weight: 600; color: var(--text); background: #F3F4F6; padding: 6px 12px; border-radius: 20px; }
+        .user-profile { font-size: 14px; font-weight: 600; color: var(--text); background: #F3F4F6; padding: 6px 12px; border-radius: 20px; }
         .sidebar { position: fixed; top: 65px; left: -260px; width: 260px; height: calc(100vh - 65px); background: var(--surface); border-right: 1px solid var(--border); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px 0; z-index: 9; overflow-y: auto;}
         .sidebar.active { left: 0; }
         .menu-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: var(--text-light); text-decoration: none; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 15px; }
@@ -99,7 +100,7 @@
         .menu-item i { width: 20px; text-align: center; font-size: 18px; }
         .main-content { padding: 30px; transition: 0.3s; margin-left: 0; flex-grow: 1; }
         .main-content.shift { margin-left: 260px; }
-        .page-title { font-size: 24px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; margin-bottom: 20px;}
+        .page-title { font-size: 22px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; margin-bottom: 20px;}
         .hidden { display: none !important; }
 
         /* Modals */
@@ -112,6 +113,7 @@
         #print-section { display: none; }
         @media print {
             body * { visibility: hidden !important; }
+            /* บังคับใช้ฟอนต์ Sarabun ทั้งหมดในหน้า Print */
             #print-section, #print-section * { visibility: visible !important; font-family: 'Sarabun', sans-serif !important; color: #000; }
             #print-section { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background: white; }
             #dashboard-screen { display: none !important; }
@@ -130,20 +132,17 @@
 </head>
 <body>
 
-    <!-- พื้นที่สำหรับ Print PDF -->
     <div id="print-section"></div>
 
-    <!-- LOGIN -->
     <div id="login-screen">
         <div class="login-card">
             <h2 style="color: var(--primary); margin-bottom: 25px;">🚗 ระบบจัดการรถองค์กร</h2>
             <div class="input-group"><label>รหัสพนักงาน</label><input type="number" id="empId" placeholder="กรอกรหัสพนักงานของคุณ"></div>
             <button class="btn" style="width: 100%; padding: 12px;" id="loginBtn" onclick="handleLogin()">เข้าสู่ระบบ</button>
-            <div id="login-loader" class="loader"><i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบข้อมูล...</div>
+            <div id="login-loader" class="loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบข้อมูล...</div>
         </div>
     </div>
 
-    <!-- DASHBOARD LAYOUT -->
     <div id="dashboard-screen">
         <nav class="navbar">
             <div style="display: flex; align-items: center; gap: 20px;">
@@ -171,19 +170,14 @@
         <div class="main-content" id="main-content"><div id="page-content"></div></div>
     </div>
 
-    <!-- MODAL: Admin ผู้ใช้ -->
     <div class="modal-overlay" id="userModal"><div class="modal-content" style="max-width:450px;"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="userModalTitle">เพิ่มผู้ใช้งาน</h3><button class="close-btn" onclick="document.getElementById('userModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="userOriginalEmpId"><div class="input-group"><label>รหัสพนักงาน</label><input type="number" id="userEmpId"></div><div class="input-group"><label>ชื่อ-สกุล</label><input type="text" id="userName"></div><div class="input-group"><label>สังกัด/แผนก</label><input type="text" id="userDept" placeholder="เช่น ผคพ.กฟจ.นพ."></div><div class="input-group"><label>สิทธิ์การใช้งาน (Role)</label><select id="userRole"><option value="User">User (ผู้ใช้ทั่วไป)</option><option value="ผู้ช่วย Admin">ผู้ช่วย Admin</option><option value="Admin">Admin (ผู้ดูแลระบบ)</option></select></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('userModal').style.display='none'">ยกเลิก</button><button class="btn flex-col" id="saveUserBtn" onclick="saveUser()">บันทึกข้อมูล</button></div></div></div>
     
-    <!-- MODAL: Admin รถยนต์ -->
     <div class="modal-overlay" id="carModal"><div class="modal-content" style="max-width:450px;"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="modalTitle">เพิ่มข้อมูลรถ</h3><button class="close-btn" onclick="document.getElementById('carModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="carId"><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><input type="text" id="carSangkat"></div><div class="input-group flex-col"><label>แผนก</label><input type="text" id="carPhanek"></div></div><div class="input-group"><label>ทะเบียนรถ</label><input type="text" id="carPlate"></div><div class="input-group"><label>ยี่ห้อ</label><input type="text" id="carBrand"></div><div class="input-group"><label>ประเภทรถ</label><input type="text" id="carType"></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('carModal').style.display='none'">ยกเลิก</button><button class="btn flex-col" id="saveCarBtn" onclick="saveCar()">บันทึกข้อมูล</button></div></div></div>
     
-    <!-- MODAL: Return คืนรถ -->
     <div class="modal-overlay" id="returnModal"><div class="modal-content" style="max-width:450px;"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 style="color: var(--warning);"><i class="fas fa-undo"></i> ดำเนินการคืนรถ</h3><button class="close-btn" onclick="document.getElementById('returnModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="return-useId"><div style="background: #FFFBEB; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #FDE68A;"><p id="return-display-plate" style="font-size: 18px; font-weight: 600; color: #D97706; margin-bottom: 5px;"></p><p id="return-display-startMile" style="font-size: 14px; color: var(--text-light);"></p></div><div class="input-group"><label>เลขไมล์หลังใช้งาน (ปัจจุบัน) <span style="color:var(--danger);">*</span></label><input type="number" id="return-endMile" style="font-size: 18px; font-weight: 600;"></div><div class="flex-row" style="margin-top: 20px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('returnModal').style.display='none'">ยกเลิก</button><button class="btn btn-warning flex-col" id="submitReturnBtn" onclick="submitReturn()">ยืนยันการคืนรถ</button></div></div></div>
     
-    <!-- MODAL: Fuel เติมน้ำมัน -->
-    <div class="modal-overlay" id="fuelModal"><div class="modal-content"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="fuel-id"><div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;"><label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label></div><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="fuel-sangkat" onchange="updateFuelPhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="fuel-phanek" onchange="updateFuelPlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ <span style="color:var(--danger);">*</span></label><select id="fuel-plate" onchange="autoFillFuelCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="fuel-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="fuel-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="flex-row"><div class="input-group flex-col"><label>เลขไมล์</label><input type="number" id="fuel-mile"></div><div class="input-group flex-col"><label>เชื้อเพลิง</label><select id="fuel-type-oil"><option value="">- เลือกชนิดเชื้อเพลิง -</option><option value="Diesel">Diesel</option><option value="Diesel B7">Diesel B7</option><option value="Diesel B20">Diesel B20</option><option value="Diesel Premium">Diesel Premium</option><option value="Gasoline 95">Gasoline 95 (เบนซิน 95)</option><option value="Gasohol 95">Gasohol 95</option><option value="Gasohol 91">Gasohol 91</option><option value="Gasohol E20">Gasohol E20</option><option value="Gasohol E85">Gasohol E85</option><option value="NGV">NGV</option><option value="LPG">LPG</option><option value="EV (Electric)">EV (Electric)</option></select></div></div><div class="flex-row"><div class="input-group flex-col"><label>สถานีบริการ (ปั๊ม)</label><input type="text" id="fuel-station"></div><div class="input-group flex-col"><label>ใบกำกับภาษี (เลขที่ปั๊ม)</label><input type="text" id="fuel-tax-invoice"></div></div><div class="flex-row"><div class="input-group flex-col"><label>ราคา/หน่วย (บาท)</label><input type="number" step="0.01" id="fuel-price" oninput="calculateFuel()"></div><div class="input-group flex-col"><label>ปริมาณ (ลิตร)</label><input type="number" step="0.01" id="fuel-quantity" oninput="calculateFuel()"></div></div><div style="background:#FEF2F2; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #FECACA;"><div class="input-group" style="margin-bottom: 10px;"><label style="color:var(--danger); font-weight:bold; font-size:14px;">จำนวนเงินรวม (Total) <span style="font-weight:normal;font-size:13px;color:var(--primary); background:#EEF2FF; padding:3px 8px; border-radius:4px;"><i class="fas fa-edit"></i> คลิกพิมพ์แก้ไขให้ตรงใบเสร็จได้</span></label><input type="number" step="0.01" id="fuel-total" oninput="recalculateVatFromTotal()" style="font-size:20px; font-weight:bold; color:var(--danger); background:#fff; border-color:var(--danger);"></div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="color:var(--text-light); font-size:14px;">มูลค่าสินค้า (Subtotal):</span><span style="font-weight:500; color:var(--text);" id="fuel-subtotal">0.00</span></div><div style="display:flex; justify-content:space-between;"><span style="color:var(--text-light); font-size:14px;">ภาษีมูลค่าเพิ่ม 7% (VAT):</span><span style="font-weight:500; color:var(--text);" id="fuel-vat">0.00</span></div></div><div class="flex-row"><div class="input-group flex-col"><label>เล่มที่</label><input type="text" id="fuel-book"></div><div class="input-group flex-col"><label>เลขที่</label><input type="text" id="fuel-no"></div></div><div class="flex-row"><div class="input-group flex-col"><label>โครงข่าย</label><input type="text" id="fuel-network"></div><div class="input-group flex-col"><label>WBS</label><input type="text" id="fuel-wbs"></div></div><div style="background:#FFFBEB; padding:15px; border-radius:8px; border:1px solid #FDE68A; margin-bottom: 15px;"><div class="flex-row"><div class="input-group flex-col" style="margin-bottom:0;"><label>รูปใบเสร็จ <span style="color:var(--danger);" id="req-receipt">* บังคับ</span></label><input type="file" id="fuel-img-receipt" accept="image/*"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>รูป ยพ. <span style="color:var(--danger);" id="req-yp">* บังคับ</span></label><input type="file" id="fuel-img-yp" accept="image/*"></div></div><p style="font-size: 11px; color: var(--warning); margin-top: 8px; margin-bottom: 0;">* ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กลงอัตโนมัติ</p></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('fuelModal').style.display='none'">ยกเลิก</button><button class="btn btn-danger flex-col" id="submitFuelBtn" onclick="submitFuel()"><i class="fas fa-save"></i> บันทึกข้อมูล</button></div></div></div>
+    <div class="modal-overlay" id="fuelModal"><div class="modal-content"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3 id="fuelModalTitle" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> บันทึกข้อมูลเติมน้ำมัน</h3><button class="close-btn" onclick="document.getElementById('fuelModal').style.display='none'"><i class="fas fa-times"></i></button></div><input type="hidden" id="fuel-id"><div id="fuel-debt-container" style="background: #EEF2FF; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="fuel-is-debt" style="width: 20px; height: 20px; cursor: pointer;"><label for="fuel-is-debt" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--primary); cursor: pointer;">ทำรายการตั้งหนี้แล้ว</label></div><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="fuel-sangkat" onchange="updateFuelPhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="fuel-phanek" onchange="updateFuelPlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ <span style="color:var(--danger);">*</span></label><select id="fuel-plate" onchange="autoFillFuelCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="fuel-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="fuel-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="flex-row"><div class="input-group flex-col"><label>เลขไมล์</label><input type="number" id="fuel-mile"></div><div class="input-group flex-col"><label>เชื้อเพลิง</label><select id="fuel-type-oil"><option value="">- เลือกชนิดเชื้อเพลิง -</option><option value="Diesel">Diesel</option><option value="Diesel B7">Diesel B7</option><option value="Diesel B20">Diesel B20</option><option value="Diesel Premium">Diesel Premium</option><option value="Gasoline 95">Gasoline 95 (เบนซิน 95)</option><option value="Gasohol 95">Gasohol 95</option><option value="Gasohol 91">Gasohol 91</option><option value="Gasohol E20">Gasohol E20</option><option value="Gasohol E85">Gasohol E85</option><option value="NGV">NGV</option><option value="LPG">LPG</option><option value="EV (Electric)">EV (Electric)</option></select></div></div><div class="flex-row"><div class="input-group flex-col"><label>สถานีบริการ (ปั๊ม)</label><input type="text" id="fuel-station"></div><div class="input-group flex-col"><label>ใบกำกับภาษี (เลขที่ปั๊ม)</label><input type="text" id="fuel-tax-invoice"></div></div><div class="flex-row"><div class="input-group flex-col"><label>ราคา/หน่วย (บาท)</label><input type="number" step="0.01" id="fuel-price" oninput="calculateFuel()"></div><div class="input-group flex-col"><label>ปริมาณ (ลิตร)</label><input type="number" step="0.01" id="fuel-quantity" oninput="calculateFuel()"></div></div><div style="background:#FEF2F2; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #FECACA;"><div class="input-group" style="margin-bottom: 10px;"><label style="color:var(--danger); font-weight:bold; font-size:14px;">จำนวนเงินรวม (Total) <span style="font-weight:normal;font-size:13px;color:var(--primary); background:#EEF2FF; padding:3px 8px; border-radius:4px;"><i class="fas fa-edit"></i> คลิกพิมพ์แก้ไขให้ตรงใบเสร็จได้</span></label><input type="number" step="0.01" id="fuel-total" oninput="recalculateVatFromTotal()" style="font-size:20px; font-weight:bold; color:var(--danger); background:#fff; border-color:var(--danger);"></div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="color:var(--text-light); font-size:14px;">มูลค่าสินค้า (Subtotal):</span><span style="font-weight:500; color:var(--text);" id="fuel-subtotal">0.00</span></div><div style="display:flex; justify-content:space-between;"><span style="color:var(--text-light); font-size:14px;">ภาษีมูลค่าเพิ่ม 7% (VAT):</span><span style="font-weight:500; color:var(--text);" id="fuel-vat">0.00</span></div></div><div class="flex-row"><div class="input-group flex-col"><label>เล่มที่</label><input type="text" id="fuel-book"></div><div class="input-group flex-col"><label>เลขที่</label><input type="text" id="fuel-no"></div></div><div class="flex-row"><div class="input-group flex-col"><label>โครงข่าย</label><input type="text" id="fuel-network"></div><div class="input-group flex-col"><label>WBS</label><input type="text" id="fuel-wbs"></div></div><div style="background:#FFFBEB; padding:15px; border-radius:8px; border:1px solid #FDE68A; margin-bottom: 15px;"><div class="flex-row"><div class="input-group flex-col" style="margin-bottom:0;"><label>รูปใบเสร็จ <span style="color:var(--danger);" id="req-receipt">* บังคับ</span></label><input type="file" id="fuel-img-receipt" accept="image/*"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>รูป ยพ. <span style="color:var(--danger);" id="req-yp">* บังคับ</span></label><input type="file" id="fuel-img-yp" accept="image/*"></div></div><p style="font-size: 11px; color: var(--warning); margin-top: 8px; margin-bottom: 0;">* ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กลงอัตโนมัติ (ประหยัดเน็ตและพื้นที่)</p></div><div class="flex-row" style="margin-top: 15px;"><button class="btn btn-outline flex-col" onclick="document.getElementById('fuelModal').style.display='none'">ยกเลิก</button><button class="btn btn-danger flex-col" id="submitFuelBtn" onclick="submitFuel()"><i class="fas fa-save"></i> บันทึกข้อมูล</button></div></div></div>
 
-    <!-- MODAL: กรอกเลขงบ (Budget) -->
     <div class="modal-overlay" id="budgetModal">
         <div class="modal-content" style="max-width:400px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
@@ -202,7 +196,6 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT MASTER -->
     <script>
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxmYjemmmUSQWvR-RiRRwOtFpCxjIzhl8RSqiE29uu_qDHHr6i6s2PyU-czJ7ODy1pIlg/exec'; 
         let currentCarsList = []; let currentFuelsList = []; let currentUsersList = []; let activeUsesList = [];
@@ -248,12 +241,56 @@
             return BahtText;
         }
 
-        window.onload = function() { const savedUser = localStorage.getItem('user_session'); if(savedUser) { renderDashboard(JSON.parse(savedUser)); fetchCarsData(); loadPage('dashboard', document.querySelector('.menu-item')); } }
+        window.onload = function() { 
+            document.getElementById('login-loader').style.display = 'none';
+            const savedUser = localStorage.getItem('user_session'); 
+            if(savedUser) { 
+                renderDashboard(JSON.parse(savedUser)); 
+                fetchCarsData(); 
+                loadPage('dashboard', document.querySelector('.menu-item')); 
+            } 
+        }
 
         // CORE & AUTH
-        async function handleLogin() { const empId = document.getElementById('empId').value; if(!empId) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสพนักงาน', 'warning'); document.getElementById('loginBtn').disabled = true; document.getElementById('login-loader').style.display = 'block'; try { const result = await apiCall({ action: 'login', empId: empId }); if(result.status === 'success') { localStorage.setItem('user_session', JSON.stringify(result.data)); renderDashboard(result.data); fetchCarsData(); loadPage('dashboard'); } else { Swal.fire('เกิดข้อผิดพลาด', result.message, 'error'); } } catch (error) { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', 'error'); } finally { document.getElementById('loginBtn').disabled = false; document.getElementById('login-loader').style.display = 'none'; } }
-        function renderDashboard(userData) { document.getElementById('login-screen').style.display = 'none'; document.getElementById('dashboard-screen').style.display = 'flex'; document.getElementById('user-display-name').innerHTML = `<i class="fas fa-user-circle"></i> ${userData.name} (${userData.role})`; if(userData.role === 'Admin') { document.getElementById('menu-admin-car').classList.remove('hidden'); document.getElementById('menu-admin-user').classList.remove('hidden'); } }
-        function logout() { localStorage.removeItem('user_session'); window.location.reload(); }
+        async function handleLogin() { 
+            const empId = document.getElementById('empId').value; 
+            if(!empId) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสพนักงาน', 'warning'); 
+            document.getElementById('loginBtn').disabled = true; 
+            document.getElementById('login-loader').style.display = 'block'; 
+            try { 
+                const result = await apiCall({ action: 'login', empId: empId }); 
+                if(result.status === 'success') { 
+                    localStorage.setItem('user_session', JSON.stringify(result.data)); 
+                    renderDashboard(result.data); fetchCarsData(); loadPage('dashboard'); 
+                } else { 
+                    Swal.fire('เกิดข้อผิดพลาด', result.message, 'error'); 
+                } 
+            } catch (error) { 
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', 'error'); 
+            } finally { 
+                document.getElementById('loginBtn').disabled = false; 
+                document.getElementById('login-loader').style.display = 'none'; 
+            } 
+        }
+
+        function renderDashboard(userData) { 
+            document.getElementById('login-screen').style.display = 'none'; 
+            document.getElementById('dashboard-screen').style.display = 'flex'; 
+            document.getElementById('user-display-name').innerHTML = `<i class="fas fa-user-circle"></i> ${userData.name} (${userData.role})`; 
+            if(userData.role === 'Admin') { 
+                document.getElementById('menu-admin-car').classList.remove('hidden'); 
+                document.getElementById('menu-admin-user').classList.remove('hidden'); 
+            } 
+        }
+        
+        function logout() { 
+            localStorage.removeItem('user_session'); 
+            document.getElementById('dashboard-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('login-loader').style.display = 'none';
+            document.getElementById('empId').value = '';
+        }
+        
         function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); if(window.innerWidth > 768) document.getElementById('main-content').classList.toggle('shift'); }
 
         async function fetchCarsData() { try { const result = await apiCall({ action: 'get_cars' }); if(result.status === 'success') currentCarsList = result.data; } catch(e) {} }
@@ -275,13 +312,103 @@
         }
 
         // ==========================================
+        // ฟังก์ชัน Filter ใน Popup หน้า Dashboard
+        // ==========================================
+        function applySwalFilter() {
+            const filterValue = document.getElementById('swal-dept-filter').value;
+            const rows = document.querySelectorAll('.swal-car-row');
+            rows.forEach(row => {
+                if (filterValue === 'all' || row.getAttribute('data-dept') === filterValue) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // ==========================================
+        // แสดง Modal สำหรับรถพร้อมใช้งาน/กำลังใช้งาน บน Dashboard
+        // ==========================================
+        function showCarStatusDetails(status) {
+            let list = []; let title = '';
+            if (status === 'available') {
+                title = '<i class="fas fa-check-circle" style="color:var(--success);"></i> รถที่พร้อมใช้งาน';
+                const activePlates = activeUsesList.map(u => u.plate);
+                list = currentCarsList.filter(c => !activePlates.includes(c.plate));
+            } else {
+                title = '<i class="fas fa-route" style="color:var(--warning);"></i> รถที่กำลังใช้งาน';
+                list = activeUsesList;
+            }
+
+            if (list.length === 0) {
+                Swal.fire({title: title, text: 'ไม่มีข้อมูล', icon: 'info', confirmButtonText: 'ปิด', confirmButtonColor: '#6366F1'});
+                return;
+            }
+
+            // ดึงรายชื่อแผนกที่ไม่ซ้ำกันเพื่อทำ Dropdown
+            let depts = [];
+            list.forEach(item => {
+                let dept = status === 'available' ? item.phanek : (currentCarsList.find(c => c.plate === item.plate) || {}).phanek;
+                if(dept && !depts.includes(dept)) depts.push(dept);
+            });
+            depts.sort();
+
+            let filterHtml = `
+                <div style="margin-bottom: 15px; text-align: left; font-family: Sarabun, sans-serif;">
+                    <label style="font-size: 14px; font-weight: 600; color: var(--text);">กรองตามแผนก:</label>
+                    <select id="swal-dept-filter" onchange="applySwalFilter()" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); outline: none; margin-top:5px; font-family: Sarabun, sans-serif; font-size:14px;">
+                        <option value="all">- แสดงทุกแผนก -</option>
+                        ${depts.map(d => `<option value="${d}">${d}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+
+            let html = '<div style="text-align: left; font-family: Sarabun, sans-serif;">';
+            html += filterHtml;
+            html += '<div style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">';
+            html += '<table style="width:100%; border-collapse: collapse; font-size:13px;">';
+            html += '<thead><tr style="background:#f3f4f6;">';
+            html += '<th style="padding:10px 8px; border-bottom:1px solid #e5e7eb; text-align:left; width:35%;">ทะเบียน/รถ</th>';
+            html += '<th style="padding:10px 8px; border-bottom:1px solid #e5e7eb; text-align:left; width:30%;">แผนก/สังกัด</th>';
+            html += '<th style="padding:10px 8px; border-bottom:1px solid #e5e7eb; text-align:left; width:35%;">รายละเอียด</th>';
+            html += '</tr></thead><tbody id="swal-car-list">';
+            
+            list.forEach(item => {
+                if (status === 'available') {
+                    html += `<tr class="swal-car-row" data-dept="${item.phanek}">
+                        <td style="padding:10px 8px; border-bottom:1px solid #e5e7eb; font-weight:600; color:var(--success); word-wrap: break-word;">${item.plate}<br><span style="font-size:12px;color:var(--text-light);font-weight:normal;">${item.brand} ${item.type}</span></td>
+                        <td style="padding:10px 8px; border-bottom:1px solid #e5e7eb; word-wrap: break-word;">${item.phanek}<br><span style="font-size:12px;color:var(--text-light);">${item.sangkat}</span></td>
+                        <td style="padding:10px 8px; border-bottom:1px solid #e5e7eb;"><span style="background:#D1FAE5; color:#065F46; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block;">พร้อมใช้งาน</span></td>
+                    </tr>`;
+                } else {
+                    const cInfo = currentCarsList.find(c => c.plate === item.plate) || {};
+                    let dept = cInfo.phanek || '-';
+                    html += `<tr class="swal-car-row" data-dept="${dept}">
+                        <td style="padding:10px 8px; border-bottom:1px solid #e5e7eb; font-weight:600; color:var(--warning); word-wrap: break-word;">${item.plate}<br><span style="font-size:12px;color:var(--text-light);font-weight:normal;">ไป: ${item.location}</span></td>
+                        <td style="padding:10px 8px; border-bottom:1px solid #e5e7eb; word-wrap: break-word;">${dept}<br><span style="font-size:12px;color:var(--text-light);">${cInfo.sangkat || '-'}</span></td>
+                        <td style="padding:10px 8px; border-bottom:1px solid #e5e7eb;"><span style="background:#FEF3C7; color:#D97706; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; word-break: break-all;"><i class="fas fa-user"></i> ${item.empName}</span></td>
+                    </tr>`;
+                }
+            });
+            html += '</tbody></table></div></div>';
+
+            Swal.fire({ title: title, html: html, width: '800px', showConfirmButton: true, confirmButtonText: 'ปิดหน้าต่าง', confirmButtonColor: '#6B7280' });
+        }
+
+
+        // ==========================================
         // REPORT / PRINT PDF PAGE
         // ==========================================
         async function renderReportPage(container) {
             if(currentFuelsList.length === 0) await fetchFuelsData();
+            
+            // แก้ไขปัญหา Timezone ให้คำนวณวันแรกและวันสุดท้ายของเดือนในเวลาท้องถิ่น
             const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const firstDay = `${y}-${m}-01`;
+            const dLast = new Date(y, now.getMonth() + 1, 0).getDate();
+            const lastDay = `${y}-${m}-${String(dLast).padStart(2, '0')}`;
 
             container.innerHTML = `
                 <div class="page-title" style="color: var(--success);"><i class="fas fa-print"></i> พิมพ์รายงาน / บันทึกข้อความ (PDF)</div>
@@ -367,7 +494,7 @@
 
             if(type === '1') {
                 // ==========================================
-                // ฟอร์ม 1: รายการใช้น้ำมัน
+                // ฟอร์ม 1: รายการใช้น้ำมัน (แก้ไขตามสั่ง: เลย์เอาท์เดิม, WBSในงบ, หมายเหตุกึ่งกลาง, ปั๊มในหมายเหตุ)
                 // ==========================================
                 let totalLiter = 0; let totalCost = 0; let totalDistance = 0;
                 
@@ -380,6 +507,7 @@
                 let firstIndex = allSorted.findIndex(f => f.id === carData[0].id);
                 if(firstIndex > 0) { trueFirstMile = parseFloat(allSorted[firstIndex - 1].mile) || ''; }
                 
+                // แถว "ยกมา" (ขยับไปอยู่ตรง หล่อลื่น เป็นเงิน)
                 let tableRows = `<tr>
                     <td></td>
                     <td></td>
@@ -409,10 +537,11 @@
                     totalLiter += q; totalCost += c; if(dist !== '') totalDistance += dist;
                     let avg = (dist !== '' && q > 0) ? (dist / q).toFixed(2) : '';
                     
-                    let docText = f.docNo || '';
-                    let budgetText = f.budget || ''; 
-                    let stationText = f.station || ''; 
+                    let docText = f.docNo || ''; // ดึงเฉพาะเลขที่
+                    let budgetText = f.budget || ''; // ดึงเลขงบมาแสดง
+                    let stationText = f.station || ''; // ดึงชื่อปั๊มมาแสดงในหมายเหตุ
 
+                    // ช่องไหนว่างก็ปล่อยว่าง ไม่ใส่ขีด (-)
                     tableRows += `<tr>
                         <td>${dText}</td>
                         <td>${docText}</td>
@@ -424,7 +553,7 @@
                         <td style="text-align:center;">${budgetText}</td> 
                         <td>${dist || ''}</td>
                         <td>${avg}</td>
-                        <td style="text-align:left;">${stationText}</td>
+                        <td style="text-align:center;">${stationText}</td>
                     </tr>`;
                     prevM = m;
                 });
@@ -499,7 +628,7 @@
 
             } else {
                 // ==========================================
-                // ฟอร์ม 2: บันทึกข้อความเบิก กฟภ. (เอา "ทำการ" ออกจากช่องงบ, ปรับตารางเซ็นว่าง)
+                // ฟอร์ม 2: บันทึกข้อความเบิก กฟภ. (อัปเดตโลโก้ + ลบเครื่องหมายในเครดิตภาษี + ตารางส่วนท้าย)
                 // ==========================================
                 let totalSub = 0; let totalVat = 0; let totalAll = 0; let tableRows = '';
                 carData.forEach((f, index) => {
@@ -513,7 +642,7 @@
                     
                     let budgetOrWbs = f.budget || f.wbs || '';
                     
-                    // นำ "ทำการ" ออกจากช่อง "งบ" ปล่อยว่างไว้
+                    // นำเครื่องหมายติ๊กถูกช่องเครดิตภาษีออก ปล่อยว่างไว้
                     tableRows += `<tr>
                         <td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td>
                         <td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td>
@@ -537,7 +666,7 @@
                                 <div style="width: 50%;"><b>ถึง</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ผจก.กฟจ.นครพนม</div>
                             </div>
                             <div style="display: flex;">
-                                <div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;ฉ.1.นพ.(กส.) -</div>
+                                <div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;ฉ.1บพ(กส) -</div>
                                 <div style="width: 50%;"><b>วันที่</b></div>
                             </div>
                             <div style="display: flex;">
@@ -578,7 +707,6 @@
                             </tbody>
                         </table>
                         
-                        <!-- ตารางส่วนท้าย 4 ช่อง ปรับเป็นเว้นว่างสำหรับปั๊มตรายางและปรับเส้นขอบให้ชัดเจน -->
                         <table style="width:100%; border:1.5px solid #000; border-top: none; border-collapse: collapse; font-size:13px;">
                             <tr>
                                 <td style="width:50%; padding:10px 15px; border-right:1.5px solid #000; border-bottom:1.5px solid #000; vertical-align: top;">
@@ -654,7 +782,11 @@
                 <div style="background: linear-gradient(135deg, var(--primary), #818CF8); color: white; padding: 30px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 4px 10px rgba(99,102,241,0.2);">
                     <h1 style="font-size: 26px; font-weight: 600; margin-bottom: 8px;">สวัสดี, คุณ${user.name}! 👋</h1><p style="margin: 0; opacity: 0.9;"><i class="fas fa-building"></i> สังกัด: ${user.department} &nbsp;|&nbsp; <i class="fas fa-id-badge"></i> สิทธิ์: ${user.role}</p></div>
                 <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text);"><i class="fas fa-chart-pie"></i> สถานะรถยนต์วันนี้</h3>
-                <div class="stat-grid"><div class="stat-card"><div class="stat-icon" style="background: var(--primary);"><i class="fas fa-car"></i></div><div class="stat-info"><h3>${totalCars}</h3><p>รถทั้งหมดในระบบ</p></div></div><div class="stat-card"><div class="stat-icon" style="background: var(--success);"><i class="fas fa-check"></i></div><div class="stat-info"><h3>${available}</h3><p>พร้อมใช้งาน</p></div></div><div class="stat-card"><div class="stat-icon" style="background: var(--warning);"><i class="fas fa-route"></i></div><div class="stat-info"><h3>${inUse}</h3><p>กำลังใช้งาน</p></div></div></div>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="stat-icon" style="background: var(--primary);"><i class="fas fa-car"></i></div><div class="stat-info"><h3>${totalCars}</h3><p>รถทั้งหมดในระบบ</p></div></div>
+                    <div class="stat-card clickable success" onclick="showCarStatusDetails('available')"><div class="stat-icon" style="background: var(--success);"><i class="fas fa-check"></i></div><div class="stat-info"><h3>${available}</h3><p>พร้อมใช้งาน (คลิกดู)</p></div></div>
+                    <div class="stat-card clickable warning" onclick="showCarStatusDetails('inuse')"><div class="stat-icon" style="background: var(--warning);"><i class="fas fa-route"></i></div><div class="stat-info"><h3>${inUse}</h3><p>กำลังใช้งาน (คลิกดู)</p></div></div>
+                </div>
                 <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text);"><i class="fas fa-bolt"></i> เมนูด่วน</h3>
                 <div class="quick-actions"><div class="action-card" onclick="loadPage('use', document.querySelectorAll('.menu-item')[2])"><i class="fas fa-key"></i><span>ขอใช้งานรถ</span></div><div class="action-card" onclick="loadPage('check', document.querySelectorAll('.menu-item')[1])"><i class="fas fa-clipboard-check" style="color: var(--success);"></i><span>เช็คสภาพ</span></div><div class="action-card" onclick="loadPage('fuel', document.querySelectorAll('.menu-item')[4])"><i class="fas fa-gas-pump" style="color: var(--danger);"></i><span>เติมน้ำมัน</span></div></div>
                 <div class="form-box" style="margin-top: 0; padding: 20px;">${myTaskHtml}</div>
@@ -693,7 +825,6 @@
             pageData.forEach(f => {
                 const formattedDate = formatDisplayDate(f.date); 
                 
-                // จัดเรียงเลขตั้งหนี้ให้อยู่บรรทัดล่าง แบบในภาพที่ 2
                 let debtBadge = `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
                 if(f.isDebt) {
                     debtBadge = `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว</span>`;
