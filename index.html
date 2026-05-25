@@ -226,122 +226,71 @@
         function formatDisplayDate(dateStr) { if(!dateStr) return ''; if(dateStr.includes('T') && dateStr.includes('Z')) { const d = new Date(dateStr); const pad = (n) => n.toString().padStart(2, '0'); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; } return dateStr; }
         function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) { return new Promise((resolve, reject) => { if (!file) return resolve(""); const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (event) => { const img = new Image(); img.src = event.target.result; img.onload = () => { let width = img.width; let height = img.height; if (width > maxWidth || height > maxHeight) { if (width > height) { height = Math.round((height *= maxWidth / width)); width = maxWidth; } else { width = Math.round((width *= maxHeight / height)); height = maxHeight; } } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/jpeg', quality)); }; img.onerror = (e) => reject(e); }; reader.onerror = (e) => reject(e); }); }
 
-        // ฟังก์ชันแปลงเลขเป็นข้อความภาษาไทย (บาท/สตางค์)
         function ThaiBaht(Number) {
             let txtNumArr = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า', 'สิบ'];
             let txtDigitArr = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
             let BahtText = '';
             if (isNaN(Number)) return 'ข้อมูลไม่ถูกต้อง';
             let amount = parseFloat(Number).toFixed(2) + '';
-            let parts = amount.split('.');
-            let number = parts[0];
-            let decimal = parts[1];
+            let parts = amount.split('.'); let number = parts[0]; let decimal = parts[1];
 
             function convert(str) {
                 let text = '';
                 for (let i = 0; i < str.length; i++) {
-                    let n = parseInt(str.charAt(i));
-                    let place = str.length - i - 1;
+                    let n = parseInt(str.charAt(i)); let place = str.length - i - 1;
                     if (n !== 0) {
                         if (n === 1 && place === 0 && str.length > 1) { text += 'เอ็ด'; } 
                         else if (n === 2 && place === 1) { text += 'ยี่สิบ'; } 
                         else if (n === 1 && place === 1) { text += 'สิบ'; } 
                         else { text += txtNumArr[n] + txtDigitArr[place % 6]; if (place >= 6 && place % 6 === 0) text += 'ล้าน'; }
                     } else if (place >= 6 && place % 6 === 0 && text.length > 0 && !text.endsWith('ล้าน')) { text += 'ล้าน'; }
-                }
-                return text;
+                } return text;
             }
-
-            BahtText = convert(number);
-            if (BahtText === '') BahtText = 'ศูนย์';
-            BahtText += 'บาท';
-
-            if (decimal === '00') { BahtText += 'ถ้วน'; } 
-            else { BahtText += convert(decimal) + 'สตางค์'; }
+            BahtText = convert(number); if (BahtText === '') BahtText = 'ศูนย์'; BahtText += 'บาท';
+            if (decimal === '00') { BahtText += 'ถ้วน'; } else { BahtText += convert(decimal) + 'สตางค์'; }
             return BahtText;
         }
 
         // แจ้งเตือนวันต่อภาษีตรงเมนูด้านซ้าย
         function updateSidebarAlerts() {
-            let alertCount = 0;
-            const now = new Date();
+            let alertCount = 0; const now = new Date();
             currentCarsList.forEach(car => {
                 if (car.taxDate) {
-                    let tDate = new Date(car.taxDate);
-                    if (isNaN(tDate)) { const parts = car.taxDate.toString().split('/'); if (parts.length === 3) tDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
-                    if (!isNaN(tDate)) {
-                        const diffDays = Math.ceil((tDate - now) / (1000 * 60 * 60 * 24));
-                        if (diffDays <= 90) alertCount++;
-                    }
+                    let tDate = new Date(car.taxDate); if (isNaN(tDate)) { const parts = car.taxDate.toString().split('/'); if (parts.length === 3) tDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
+                    if (!isNaN(tDate)) { const diffDays = Math.ceil((tDate - now) / (1000 * 60 * 60 * 24)); if (diffDays <= 90) alertCount++; }
                 }
             });
             const alertIcon = document.getElementById('sidebar-car-alert');
-            if (alertIcon) {
-                alertIcon.style.display = alertCount > 0 ? 'inline-block' : 'none';
-            }
+            if (alertIcon) alertIcon.style.display = alertCount > 0 ? 'inline-block' : 'none';
         }
 
         window.onload = function() { 
             document.getElementById('login-loader').style.display = 'none';
             const savedUser = localStorage.getItem('user_session'); 
-            if(savedUser) { 
-                renderDashboard(JSON.parse(savedUser)); 
-                fetchCarsData(); 
-                loadPage('dashboard', document.querySelector('.menu-item')); 
-            } 
+            if(savedUser) { renderDashboard(JSON.parse(savedUser)); fetchCarsData(); loadPage('dashboard', document.querySelector('.menu-item')); } 
         }
 
         // CORE & AUTH
         async function handleLogin() { 
             const empId = document.getElementById('empId').value; 
             if(!empId) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสพนักงาน', 'warning'); 
-            document.getElementById('loginBtn').disabled = true; 
-            document.getElementById('login-loader').style.display = 'block'; 
+            document.getElementById('loginBtn').disabled = true; document.getElementById('login-loader').style.display = 'block'; 
             try { 
                 const result = await apiCall({ action: 'login', empId: empId }); 
-                if(result.status === 'success') { 
-                    localStorage.setItem('user_session', JSON.stringify(result.data)); 
-                    renderDashboard(result.data); fetchCarsData(); loadPage('dashboard'); 
-                } else { 
-                    Swal.fire('เกิดข้อผิดพลาด', result.message, 'error'); 
-                } 
-            } catch (error) { 
-                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', 'error'); 
-            } finally { 
-                document.getElementById('loginBtn').disabled = false; 
-                document.getElementById('login-loader').style.display = 'none'; 
-            } 
+                if(result.status === 'success') { localStorage.setItem('user_session', JSON.stringify(result.data)); renderDashboard(result.data); fetchCarsData(); loadPage('dashboard'); } 
+                else { Swal.fire('เกิดข้อผิดพลาด', result.message, 'error'); } 
+            } catch (error) { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', 'error'); } 
+            finally { document.getElementById('loginBtn').disabled = false; document.getElementById('login-loader').style.display = 'none'; } 
         }
 
         function renderDashboard(userData) { 
-            document.getElementById('login-screen').style.display = 'none'; 
-            document.getElementById('dashboard-screen').style.display = 'flex'; 
-            document.getElementById('user-display-name').innerHTML = `<i class="fas fa-user-circle"></i> ${userData.name} (${userData.role})`; 
-            if(userData.role === 'Admin') { 
-                document.getElementById('menu-admin-car').classList.remove('hidden'); 
-                document.getElementById('menu-admin-user').classList.remove('hidden'); 
-            } 
+            document.getElementById('login-screen').style.display = 'none'; document.getElementById('dashboard-screen').style.display = 'flex'; document.getElementById('user-display-name').innerHTML = `<i class="fas fa-user-circle"></i> ${userData.name} (${userData.role})`; 
+            if(userData.role === 'Admin') { document.getElementById('menu-admin-car').classList.remove('hidden'); document.getElementById('menu-admin-user').classList.remove('hidden'); } 
         }
-        
-        function logout() { 
-            localStorage.removeItem('user_session'); 
-            document.getElementById('dashboard-screen').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('login-loader').style.display = 'none';
-            document.getElementById('empId').value = '';
-        }
-        
+        function logout() { localStorage.removeItem('user_session'); document.getElementById('dashboard-screen').style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; document.getElementById('login-loader').style.display = 'none'; document.getElementById('empId').value = ''; }
         function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); if(window.innerWidth > 768) document.getElementById('main-content').classList.toggle('shift'); }
 
-        async function fetchCarsData() { 
-            try { 
-                const result = await apiCall({ action: 'get_cars' }); 
-                if(result.status === 'success') {
-                    currentCarsList = result.data; 
-                    updateSidebarAlerts(); // อัปเดตแจ้งเตือนภาษี
-                }
-            } catch(e) {} 
-        }
+        async function fetchCarsData() { try { const result = await apiCall({ action: 'get_cars' }); if(result.status === 'success') { currentCarsList = result.data; updateSidebarAlerts(); } } catch(e) {} }
         async function fetchUsersData() { try { const result = await apiCall({ action: 'get_users' }); if(result.status === 'success') currentUsersList = result.data; } catch(e) {} }
         async function fetchFuelsData() { try { const result = await apiCall({ action: 'get_fuels' }); if(result.status === 'success') currentFuelsList = result.data; } catch(e) {} }
 
@@ -359,6 +308,9 @@
             else if(page === 'user-settings') renderAdminUserPage(contentDiv);
         }
 
+        // ==========================================
+        // Modal สำหรับ Dashboard (กรองแผนก)
+        // ==========================================
         function applySwalFilter() {
             const filterValue = document.getElementById('swal-dept-filter').value;
             const rows = document.querySelectorAll('.swal-car-row');
@@ -379,21 +331,10 @@
             }
             if (list.length === 0) { Swal.fire({title: title, text: 'ไม่มีข้อมูล', icon: 'info', confirmButtonText: 'ปิด', confirmButtonColor: '#6366F1'}); return; }
             let depts = [];
-            list.forEach(item => {
-                let dept = status === 'available' ? item.phanek : (currentCarsList.find(c => c.plate === item.plate) || {}).phanek;
-                if(dept && !depts.includes(dept)) depts.push(dept);
-            });
+            list.forEach(item => { let dept = status === 'available' ? item.phanek : (currentCarsList.find(c => c.plate === item.plate) || {}).phanek; if(dept && !depts.includes(dept)) depts.push(dept); });
             depts.sort();
 
-            let filterHtml = `
-                <div style="margin-bottom: 15px; text-align: left; font-family: Sarabun, sans-serif;">
-                    <label style="font-size: 14px; font-weight: 600; color: var(--text);">กรองตามแผนก:</label>
-                    <select id="swal-dept-filter" onchange="applySwalFilter()" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); outline: none; margin-top:5px; font-family: Sarabun, sans-serif; font-size:14px;">
-                        <option value="all">- แสดงทุกแผนก -</option>
-                        ${depts.map(d => `<option value="${d}">${d}</option>`).join('')}
-                    </select>
-                </div>
-            `;
+            let filterHtml = `<div style="margin-bottom: 15px; text-align: left; font-family: Sarabun, sans-serif;"><label style="font-size: 14px; font-weight: 600; color: var(--text);">กรองตามแผนก:</label><select id="swal-dept-filter" onchange="applySwalFilter()" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); outline: none; margin-top:5px; font-family: Sarabun, sans-serif; font-size:14px;"><option value="all">- แสดงทุกแผนก -</option>${depts.map(d => `<option value="${d}">${d}</option>`).join('')}</select></div>`;
             let html = '<div style="text-align: left; font-family: Sarabun, sans-serif;">' + filterHtml;
             html += '<div style="max-height: 350px; overflow-y: auto; overflow-x: hidden; border: 1px solid var(--border); border-radius: 8px;"><table style="width:100%; border-collapse: collapse; font-size:14px; table-layout: fixed;"><thead><tr style="background:#f3f4f6;"><th style="padding:10px; border-bottom:1px solid #e5e7eb; width:40%;">ทะเบียน/รถ</th><th style="padding:10px; border-bottom:1px solid #e5e7eb; width:30%;">แผนก/สังกัด</th><th style="padding:10px; border-bottom:1px solid #e5e7eb; width:30%;">รายละเอียด</th></tr></thead><tbody id="swal-car-list">';
             list.forEach(item => {
@@ -410,7 +351,134 @@
 
 
         // ==========================================
-        // REPORT / PRINT PDF PAGE
+        // MAIN DASHBOARD PAGE
+        // ==========================================
+        async function renderMainDashboard(container) {
+            const user = JSON.parse(localStorage.getItem('user_session')); container.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>กำลังโหลดภาพรวม...</div>`;
+            try { const res = await apiCall({ action: 'get_active_uses' }); if(res.status === 'success') activeUsesList = res.data; } catch(e) { activeUsesList = []; }
+            const totalCars = currentCarsList.length; const inUse = activeUsesList.length; const available = totalCars - inUse;
+            const myActiveCars = activeUsesList.filter(u => u.empName === user.name); let myTaskHtml = '';
+            if (myActiveCars.length > 0) {
+                myTaskHtml = `<h3 style="margin-bottom: 15px; font-size: 18px;"><i class="fas fa-bell text-warning"></i> รายการที่รอส่งคืน</h3><div class="card-grid" style="margin-top:0;">`;
+                myActiveCars.forEach(u => { myTaskHtml += `<div class="use-card" style="border-left: 4px solid var(--warning);"><div class="use-card-header"><div class="use-card-plate">${u.plate}</div></div><div class="use-card-detail"><strong>สถานที่:</strong> ${u.location}</div><button class="btn btn-warning" style="width:100%; margin-top:10px;" onclick="loadPage('return', document.querySelectorAll('.menu-item')[3])">ดำเนินการคืนรถ</button></div>`; }); myTaskHtml += `</div>`;
+            } else { myTaskHtml = `<p style="color: var(--text-light);"><i class="fas fa-check-circle text-success"></i> ยอดเยี่ยม! คุณไม่มีรายการยืมรถค้างอยู่</p>`; }
+
+            container.innerHTML = `
+                <div style="background: linear-gradient(135deg, var(--primary), #818CF8); color: white; padding: 30px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 4px 10px rgba(99,102,241,0.2);">
+                    <h1 style="font-size: 26px; font-weight: 600; margin-bottom: 8px;">สวัสดี, คุณ${user.name}! 👋</h1><p style="margin: 0; opacity: 0.9;"><i class="fas fa-building"></i> สังกัด: ${user.department} &nbsp;|&nbsp; <i class="fas fa-id-badge"></i> สิทธิ์: ${user.role}</p></div>
+                <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text);"><i class="fas fa-chart-pie"></i> สถานะรถยนต์วันนี้</h3>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="stat-icon" style="background: var(--primary);"><i class="fas fa-car"></i></div><div class="stat-info"><h3>${totalCars}</h3><p>รถทั้งหมดในระบบ</p></div></div>
+                    <div class="stat-card clickable success" onclick="showCarStatusDetails('available')"><div class="stat-icon" style="background: var(--success);"><i class="fas fa-check"></i></div><div class="stat-info"><h3>${available}</h3><p>พร้อมใช้งาน (คลิกดู)</p></div></div>
+                    <div class="stat-card clickable warning" onclick="showCarStatusDetails('inuse')"><div class="stat-icon" style="background: var(--warning);"><i class="fas fa-route"></i></div><div class="stat-info"><h3>${inUse}</h3><p>กำลังใช้งาน (คลิกดู)</p></div></div>
+                </div>
+                <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text);"><i class="fas fa-bolt"></i> เมนูด่วน</h3>
+                <div class="quick-actions"><div class="action-card" onclick="loadPage('use', document.querySelectorAll('.menu-item')[2])"><i class="fas fa-key"></i><span>ขอใช้งานรถ</span></div><div class="action-card" onclick="loadPage('check', document.querySelectorAll('.menu-item')[1])"><i class="fas fa-clipboard-check" style="color: var(--success);"></i><span>เช็คสภาพ</span></div><div class="action-card" onclick="loadPage('fuel', document.querySelectorAll('.menu-item')[4])"><i class="fas fa-gas-pump" style="color: var(--danger);"></i><span>เติมน้ำมัน</span></div></div>
+                <div class="form-box" style="margin-top: 0; padding: 20px;">${myTaskHtml}</div>
+            `;
+        }
+
+        // ==========================================
+        // FUEL DASHBOARD PAGE
+        // ==========================================
+        async function renderFuelDashboard(container) {
+            container.innerHTML = `<div class="page-title" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> ประวัติการเติมน้ำมัน</div><div class="form-box" style="margin-bottom: 20px;"><div class="flex-row"><div class="input-group flex-col"><select id="filter-fuel-time" onchange="filterFuelTable()"><option value="month" selected>📌 เฉพาะเดือนปัจจุบัน</option><option value="week">📅 7 วันล่าสุด</option><option value="all">📂 ดูทั้งหมด</option></select></div><div class="input-group flex-col"><select id="filter-fuel-debt" onchange="filterFuelTable()"><option value="all" selected>- ทุกสถานะตั้งหนี้ -</option><option value="pending">⏳ ยังไม่ตั้งหนี้</option><option value="completed">✅ ตั้งหนี้แล้ว</option></select></div><div class="input-group flex-col"><select id="filter-fuel-paytype" onchange="filterFuelTable()"><option value="all" selected>- ทุกประเภทจ่าย -</option><option value="เครดิต">เครดิต</option><option value="ฟรีการ์ด">ฟรีการ์ด</option></select></div><div class="input-group flex-col"><select id="filter-fuel-sangkat" onchange="updateFilterFuelPhanek()"><option value="">- ทุกสังกัด -</option></select></div><div class="input-group flex-col"><select id="filter-fuel-phanek" onchange="updateFilterFuelPlate()"><option value="">- ทุกแผนก -</option></select></div><div class="input-group flex-col"><select id="filter-fuel-plate" onchange="filterFuelTable()"><option value="">- ทุกทะเบียน -</option></select></div><div class="input-group flex-col"><button class="btn btn-danger" style="width: 100%; height: 44px;" onclick="openFuelModal('add')"><i class="fas fa-plus"></i> เพิ่มรายการ</button></div></div></div><div id="fuel-table-loader" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div><div class="table-container hidden" id="fuel-table-wrapper"><table style="width: 100%; min-width: 950px;"><thead><tr><th style="width: 12%;">วันที่</th><th style="width: 18%;">ผู้เติม/สังกัด</th><th style="width: 12%;">รถยนต์</th><th style="width: 25%;">รายละเอียดการเติม</th><th style="width: 15%;">โครงข่าย/WBS/งบ</th><th style="width: 10%; text-align:center;">เอกสาร</th><th style="width: 8%; text-align:center;">จัดการ</th></tr></thead><tbody id="fuel-table-body"></tbody></table><div id="fuel-pagination" class="pagination"></div></div>`;
+            const selectSangkat = document.getElementById('filter-fuel-sangkat'); [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => selectSangkat.add(new Option(s, s))); const selectPhanek = document.getElementById('filter-fuel-phanek'); [...new Set(currentCarsList.map(c => c.phanek))].forEach(p => selectPhanek.add(new Option(p, p))); const selectPlate = document.getElementById('filter-fuel-plate'); [...new Set(currentCarsList.map(c => c.plate))].forEach(pl => selectPlate.add(new Option(pl, pl))); await fetchFuelsData(); filterFuelTable(); 
+        }
+
+        function updateFilterFuelPhanek() { const s = document.getElementById('filter-fuel-sangkat').value; const selectP = document.getElementById('filter-fuel-phanek'); const selectPl = document.getElementById('filter-fuel-plate'); selectP.innerHTML = '<option value="">- ทุกแผนก -</option>'; selectPl.innerHTML = '<option value="">- ทุกทะเบียน -</option>'; let filtered = currentCarsList; if(s) filtered = filtered.filter(c => c.sangkat === s); [...new Set(filtered.map(c => c.phanek))].forEach(p => selectP.add(new Option(p, p))); [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl))); filterFuelTable(); }
+        function updateFilterFuelPlate() { const s = document.getElementById('filter-fuel-sangkat').value; const p = document.getElementById('filter-fuel-phanek').value; const selectPl = document.getElementById('filter-fuel-plate'); selectPl.innerHTML = '<option value="">- ทุกทะเบียน -</option>'; let filtered = currentCarsList; if(s) filtered = filtered.filter(c => c.sangkat === s); if(p) filtered = filtered.filter(c => c.phanek === p); [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl))); filterFuelTable(); }
+        
+        function filterFuelTable() {
+            const sEl = document.getElementById('filter-fuel-sangkat'); const pEl = document.getElementById('filter-fuel-phanek'); const plEl = document.getElementById('filter-fuel-plate'); const tEl = document.getElementById('filter-fuel-time'); const dEl = document.getElementById('filter-fuel-debt'); const ptEl = document.getElementById('filter-fuel-paytype'); if(!sEl || !pEl || !plEl || !tEl || !dEl || !ptEl) return;
+            const timeFilter = tEl.value; const debtFilter = dEl.value; const sangkat = sEl.value; const phanek = pEl.value; const plate = plEl.value; const payTypeFilter = ptEl.value; const now = new Date();
+            currentFilteredFuels = currentFuelsList.filter(f => {
+                let dateMatch = true; if(f.date) { let d = new Date(f.date); if(isNaN(d)) { const parts = f.date.split(' ')[0].split('/'); if(parts.length===3) d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); } if(!isNaN(d)) { if (timeFilter === 'month') { dateMatch = (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()); } else if (timeFilter === 'week') { const diffDays = (now - d) / (1000 * 60 * 60 * 24); dateMatch = diffDays <= 7 && diffDays >= 0; } } }
+                let debtMatch = true; if (debtFilter === 'pending') debtMatch = !f.isDebt; else if (debtFilter === 'completed') debtMatch = f.isDebt;
+                let payTypeMatch = true; if (payTypeFilter !== 'all') payTypeMatch = f.payType === payTypeFilter;
+                return dateMatch && debtMatch && payTypeMatch && (!sangkat || f.sangkat === sangkat) && (!phanek || f.phanek === phanek) && (!plate || f.plate === plate);
+            });
+            const loader = document.getElementById('fuel-table-loader'); const wrapper = document.getElementById('fuel-table-wrapper'); if (loader) loader.classList.add('hidden'); if (wrapper) wrapper.classList.remove('hidden'); renderFuelTablePage(1);
+        }
+
+        function renderFuelTablePage(page) {
+            const user = JSON.parse(localStorage.getItem('user_session')); currentFuelPage = page; const tbody = document.getElementById('fuel-table-body'); const paginationDiv = document.getElementById('fuel-pagination'); if (!tbody) return; tbody.innerHTML = ''; paginationDiv.innerHTML = '';
+            if(currentFilteredFuels.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">ไม่มีข้อมูลประวัติการเติมน้ำมัน</td></tr>`; return; }
+            const start = (page - 1) * FUEL_ITEMS_PER_PAGE; const end = start + FUEL_ITEMS_PER_PAGE; const pageData = currentFilteredFuels.slice(start, end);
+
+            pageData.forEach(f => {
+                const formattedDate = formatDisplayDate(f.date); 
+                let debtBadge = `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
+                if(f.isDebt) { debtBadge = `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว</span>`; if(f.debtNo && f.debtNo !== '-') { debtBadge += `<br><span style="font-size:12px; color:#065F46; font-weight:600; display:inline-block; margin-top:4px;">(${f.debtNo})</span>`; } }
+                let pTypeBadge = f.payType ? `<br><span class="badge-paytype"><i class="fas fa-wallet"></i> ${f.payType}</span>` : '';
+                let docHtml = ''; if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> บิล</a><br>`; if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> ยพ.</a>`; if(!docHtml) docHtml = '-';
+                let actionHtml = `<button class="btn btn-warning btn-sm" style="padding: 6px 10px;" onclick="openFuelModal('edit', '${f.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" style="padding: 6px 10px;" onclick="deleteFuel('${f.id}')"><i class="fas fa-trash"></i></button>`;
+                
+                if (user.role === 'Admin' || user.role === 'ผู้ช่วย Admin') {
+                    actionHtml = `<button class="btn btn-sm" style="background:#6366F1; color:white; margin-bottom: 4px; width: 100%;" onclick="openBudgetModal('${f.id}')"><i class="fas fa-coins"></i> ระบุงบ</button><br>` + actionHtml;
+                    if (!f.isDebt) { actionHtml = `<button class="btn btn-success btn-sm" style="margin-bottom: 4px; width: 100%;" onclick="markDebt('${f.id}')"><i class="fas fa-check-circle"></i> ตั้งหนี้</button><br>` + actionHtml; }
+                }
+                let budgetBadge = f.budget ? `<br><span class="badge-budget"><i class="fas fa-hashtag"></i> งบ: ${f.budget}</span>` : '';
+
+                tbody.innerHTML += `<tr>
+                    <td style="color: var(--text-light);">${formattedDate}</td>
+                    <td><b>${f.empName}</b><br><span style="font-size:12px; color:var(--text-light);">${f.sangkat} - ${f.phanek}</span></td>
+                    <td><span style="font-weight: 500; color: var(--info);">${f.plate}</span><br>${debtBadge}${pTypeBadge}</td>
+                    <td><div style="line-height: 1.5;"><span style="color: var(--text);"><b>ปั๊ม:</b> ${f.station || '-'}</span><br><span style="font-size:13px; color:var(--text-light);">ใบกำกับภาษี: ${f.taxInvoice || '-'}</span><br><span style="font-weight: 600; color: var(--danger);">ยอดชำระ: ฿${f.totalAmount}</span></div></td>
+                    <td><div style="line-height: 1.5;"><span style="font-size:13px; color:var(--text-light);"><b>WBS:</b> ${f.wbs || '-'}</span><br><span style="font-size:13px; color:var(--text-light);"><b>โครงข่าย:</b> ${f.network || '-'}</span>${budgetBadge}</div></td>
+                    <td style="text-align:center;">${docHtml}</td><td style="text-align:center;">${actionHtml}</td>
+                </tr>`;
+            });
+            const totalPages = Math.ceil(currentFilteredFuels.length / FUEL_ITEMS_PER_PAGE); if(totalPages > 1) { for(let i = 1; i <= totalPages; i++) { paginationDiv.innerHTML += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="renderFuelTablePage(${i})">${i}</button>`; } }
+        }
+
+        function openBudgetModal(id) { const f = currentFuelsList.find(item => item.id === id); document.getElementById('budget-fuel-id').value = id; document.getElementById('budget-value').value = f ? (f.budget || '') : ''; document.getElementById('budgetModal').style.display = 'flex'; }
+        async function submitBudget() {
+            const id = document.getElementById('budget-fuel-id').value; const budgetVal = document.getElementById('budget-value').value; document.getElementById('submitBudgetBtn').disabled = true; document.getElementById('submitBudgetBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
+            try { const res = await apiCall({ action: 'save_fuel_budget', id: id, budget: budgetVal }); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('budgetModal').style.display = 'none'; await fetchFuelsData(); filterFuelTable(); } } catch(e) {} finally { document.getElementById('submitBudgetBtn').disabled = false; document.getElementById('submitBudgetBtn').innerHTML = 'บันทึกเลขงบ'; }
+        }
+        function markDebt(id) { Swal.fire({ title: 'ระบุเลขตั้งหนี้', input: 'text', inputPlaceholder: 'กรอกเลขตั้งหนี้ (ถ้ามี)', showCancelButton: true, confirmButtonColor: '#10B981', confirmButtonText: 'บันทึกตั้งหนี้', cancelButtonText: 'ยกเลิก' }).then(async (result) => { if (result.isConfirmed) { const debtNo = result.value || '-'; try { const res = await apiCall({ action: 'mark_fuel_debt', id: id, debtNo: debtNo }); if(res.status === 'success') { Swal.fire('สำเร็จ', '', 'success'); await fetchFuelsData(); filterFuelTable(); } } catch(e) {} } }); }
+
+        function openFuelModal(mode, id = null) {
+            document.getElementById('fuelModal').style.display = 'flex'; const user = JSON.parse(localStorage.getItem('user_session')); const canManageDebt = (user.role === 'Admin' || user.role === 'ผู้ช่วย Admin');
+            const selectSangkat = document.getElementById('fuel-sangkat'); const uniqueSangkat = [...new Set(currentCarsList.map(c => c.sangkat))]; selectSangkat.innerHTML = '<option value="">- เลือกสังกัด -</option>'; uniqueSangkat.forEach(s => selectSangkat.add(new Option(s, s)));
+            const now = new Date(); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, '0'); const d = String(now.getDate()).padStart(2, '0'); const todayStr = `${y}-${m}-${d}`;
+
+            if(mode === 'add') {
+                document.getElementById('fuelModalTitle').innerText = 'บันทึกข้อมูลเติมน้ำมัน'; document.getElementById('fuel-id').value = ''; document.getElementById('fuel-debt-container').style.display = 'none';
+                ['fuel-sangkat','fuel-phanek','fuel-plate','fuel-brand','fuel-type','fuel-mile','fuel-type-oil','fuel-station','fuel-tax-invoice','fuel-price','fuel-quantity','fuel-total','fuel-book','fuel-no','fuel-network','fuel-wbs', 'fuel-pay-type'].forEach(el => document.getElementById(el).value = '');
+                document.getElementById('fuel-subtotal').innerText = '0.00'; document.getElementById('fuel-vat').innerText = '0.00';
+                document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = ''; document.getElementById('fuel-is-debt').checked = false; 
+                document.getElementById('req-receipt').innerHTML = '* บังคับ'; document.getElementById('req-yp').innerHTML = '* บังคับ'; document.getElementById('fuel-date').value = todayStr;
+            } else if (id) {
+                document.getElementById('fuelModalTitle').innerText = 'แก้ไขรายการเติมน้ำมัน'; document.getElementById('fuel-debt-container').style.display = canManageDebt ? 'flex' : 'none';
+                const f = currentFuelsList.find(item => item.id === id);
+                if(f) {
+                    document.getElementById('fuel-id').value = f.id; document.getElementById('fuel-is-debt').checked = f.isDebt; document.getElementById('fuel-sangkat').value = f.sangkat; updateFuelPhanek(); document.getElementById('fuel-phanek').value = f.phanek; updateFuelPlate(); document.getElementById('fuel-plate').value = f.plate; autoFillFuelCarDetails(); document.getElementById('fuel-mile').value = f.mile; document.getElementById('fuel-type-oil').value = f.fuelType; document.getElementById('fuel-station').value = f.station; document.getElementById('fuel-tax-invoice').value = f.taxInvoice; document.getElementById('fuel-price').value = f.price; document.getElementById('fuel-quantity').value = f.quantity; document.getElementById('fuel-total').value = f.totalAmount; recalculateVatFromTotal(); document.getElementById('fuel-book').value = f.bookNo; document.getElementById('fuel-no').value = f.docNo; document.getElementById('fuel-network').value = f.network; document.getElementById('fuel-wbs').value = f.wbs; document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = ''; document.getElementById('req-receipt').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; document.getElementById('req-yp').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; document.getElementById('fuel-pay-type').value = f.payType || '';
+                    let dText = ''; if(f.date) { let dt = new Date(f.date); if(isNaN(dt)) { const p = f.date.split(' ')[0].split('/'); dt = new Date(`${p[2]}-${p[1]}-${p[0]}`); } if(!isNaN(dt)) { dText = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; } } document.getElementById('fuel-date').value = dText;
+                }
+            }
+        }
+        function updateFuelPhanek() { const val = document.getElementById('fuel-sangkat').value; const select = document.getElementById('fuel-phanek'); select.innerHTML = '<option value="">- เลือกแผนก -</option>'; document.getElementById('fuel-plate').innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('fuel-brand').value = ''; document.getElementById('fuel-type').value = ''; if(val) [...new Set(currentCarsList.filter(c => c.sangkat === val).map(c => c.phanek))].forEach(p => select.add(new Option(p, p))); }
+        function updateFuelPlate() { const s = document.getElementById('fuel-sangkat').value; const p = document.getElementById('fuel-phanek').value; const select = document.getElementById('fuel-plate'); select.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('fuel-brand').value = ''; document.getElementById('fuel-type').value = ''; if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => select.add(new Option(c.plate, c.plate))); }
+        function autoFillFuelCarDetails() { const plate = document.getElementById('fuel-plate').value; const car = currentCarsList.find(c => c.plate === plate); document.getElementById('fuel-brand').value = car ? car.brand : ''; document.getElementById('fuel-type').value = car ? car.type : ''; }
+        function calculateFuel() { const price = parseFloat(document.getElementById('fuel-price').value) || 0; const qty = parseFloat(document.getElementById('fuel-quantity').value) || 0; document.getElementById('fuel-total').value = (price * qty).toFixed(2); recalculateVatFromTotal(); }
+        function recalculateVatFromTotal() { const total = parseFloat(document.getElementById('fuel-total').value) || 0; document.getElementById('fuel-subtotal').innerText = ((total * 100) / 107).toFixed(2); document.getElementById('fuel-vat').innerText = ((total * 7) / 107).toFixed(2); }
+        
+        async function submitFuel() { 
+            const id = document.getElementById('fuel-id').value; const fuelDate = document.getElementById('fuel-date').value; const payType = document.getElementById('fuel-pay-type').value;
+            const isDebt = document.getElementById('fuel-is-debt').checked; const sangkat = document.getElementById('fuel-sangkat').value; const phanek = document.getElementById('fuel-phanek').value; const plate = document.getElementById('fuel-plate').value; const brand = document.getElementById('fuel-brand').value; const type = document.getElementById('fuel-type').value; const mile = document.getElementById('fuel-mile').value; const fuelType = document.getElementById('fuel-type-oil').value; const station = document.getElementById('fuel-station').value; const taxInvoice = document.getElementById('fuel-tax-invoice').value; const price = document.getElementById('fuel-price').value; const quantity = document.getElementById('fuel-quantity').value; const totalAmount = document.getElementById('fuel-total').value; const subtotal = document.getElementById('fuel-subtotal').innerText; const vat = document.getElementById('fuel-vat').innerText; const book = document.getElementById('fuel-book').value; const docNo = document.getElementById('fuel-no').value; const network = document.getElementById('fuel-network').value; const wbs = document.getElementById('fuel-wbs').value; const receiptFile = document.getElementById('fuel-img-receipt').files[0]; const ypFile = document.getElementById('fuel-img-yp').files[0]; 
+            if (!fuelDate) return Swal.fire('แจ้งเตือน', 'กรุณาระบุวันที่เติมน้ำมัน', 'warning'); if (!payType) return Swal.fire('แจ้งเตือน', 'กรุณาระบุประเภทการจ่ายเงิน', 'warning'); if (!id && (!receiptFile || !ypFile)) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลดเอกสารบิลและยพ.ให้ครบถ้วน', 'warning'); if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); 
+            const confirmResult = await Swal.fire({ title: 'ตรวจสอบข้อมูลก่อนบันทึก', html: `<div style="text-align: left; font-size: 14px; background: #F9FAFB; padding: 15px; border-radius: 8px; max-height: 50vh; overflow-y: auto; border: 1px solid #E5E7EB;"><div style="margin-bottom: 10px; color: ${isDebt ? '#065F46' : '#6B7280'}; font-weight:bold; display: ${id ? 'block' : 'none'};"><i class="fas ${isDebt ? 'fa-check-circle' : 'fa-times-circle'}"></i> สถานะ: ${isDebt ? 'ตั้งหนี้แล้ว' : 'ยังไม่ตั้งหนี้'}</div><p style="margin-bottom: 5px;"><b>วันที่เติม:</b> ${fuelDate}</p><p style="margin-bottom: 5px;"><b>ประเภทจ่าย:</b> ${payType}</p><p style="margin-bottom: 5px;"><b>รถยนต์:</b> ${plate} (${brand} ${type})</p><p style="margin-bottom: 5px;"><b>สังกัด/แผนก:</b> ${sangkat || '-'} / ${phanek || '-'}</p><p style="margin-bottom: 5px;"><b>เลขไมล์:</b> ${mile || '-'}</p><hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;"><p style="margin-bottom: 5px;"><b>สถานีบริการ:</b> ${station || '-'} (บิล: ${taxInvoice || '-'})</p><p style="margin-bottom: 5px;"><b>เล่มที่/เลขที่:</b> ${book || '-'} / ${docNo || '-'}</p><p style="margin-bottom: 5px;"><b>เชื้อเพลิง:</b> ${fuelType || '-'}</p><p style="margin-bottom: 5px;"><b>ปริมาณ:</b> ${quantity || 0} ลิตร (ราคา ฿${price || 0}/ลิตร)</p><p style="margin-bottom: 5px;"><b>โครงข่าย/WBS:</b> ${network || '-'} / ${wbs || '-'}</p><hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;"><div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>มูลค่าสินค้า:</span> <span>฿${subtotal}</span></div><div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>VAT 7%:</span> <span>฿${vat}</span></div><div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 16px;"><b>ยอดชำระรวม:</b> <b style="color:var(--danger);">฿${totalAmount || '0.00'}</b></div></div>`, icon: 'info', showCancelButton: true, confirmButtonColor: '#10B981', cancelButtonColor: '#6B7280', confirmButtonText: '<i class="fas fa-check"></i> ยืนยันการบันทึก', cancelButtonText: 'กลับไปแก้ไข' }); if (!confirmResult.isConfirmed) return; 
+            document.getElementById('submitFuelBtn').disabled = true; document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบีบอัดภาพและบันทึก...'; 
+            const receiptB64 = await compressImage(receiptFile); const ypB64 = await compressImage(ypFile); const user = JSON.parse(localStorage.getItem('user_session')); 
+            const payload = { action: id ? 'edit_fuel' : 'add_fuel', id: id, fuelDate: fuelDate, payType: payType, empName: user.name, sangkat: sangkat, phanek: phanek, plate: plate, mile: mile, fuelType: fuelType, station: station, taxInvoice: taxInvoice, price: price, quantity: quantity, totalAmount: totalAmount, bookNo: book, docNo: docNo, network: network, wbs: wbs, isDebt: isDebt, receiptBase64: receiptB64, receiptName: receiptFile ? receiptFile.name : '', ypBase64: ypB64, ypName: ypFile ? ypFile.name : '' }; 
+            try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('fuelModal').style.display = 'none'; await fetchFuelsData(); filterFuelTable(); } else { Swal.fire('ผิดพลาด', res.message, 'error'); } } catch(e) {} finally { document.getElementById('submitFuelBtn').disabled = false; document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล'; } 
+        }
+        function deleteFuel(id) { Swal.fire({ title: 'ลบรายการ?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'ลบเลย!' }).then(async (result) => { if (result.isConfirmed) { try { const res = await apiCall({ action: 'delete_fuel', id: id }); if(res.status === 'success') { Swal.fire('ลบแล้ว', '', 'success'); await fetchFuelsData(); filterFuelTable(); } } catch(e) {} } }); }
+
+        // ==========================================
+        // REPORT PAGE
         // ==========================================
         async function renderReportPage(container) {
             if(currentFuelsList.length === 0) await fetchFuelsData();
@@ -531,24 +599,14 @@
                         let dText = ''; if(f.date) { let d = new Date(f.date); if(isNaN(d)) { const parts = f.date.split(' ')[0].split('/'); d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); } dText = `${d.getDate()} ${shortMonthNames[d.getMonth()]} ${d.getFullYear()+543}`; }
                         const t = parseFloat(f.totalAmount) || 0; const sub = (t * 100) / 107; const vat = (t * 7) / 107;
                         totalSub += sub; totalVat += vat; totalAll += t;
-                        
-                        let costCenterArr = []; if (f.wbs) costCenterArr.push(f.wbs); if (f.network) costCenterArr.push(f.network);
-                        let costCenterStr = costCenterArr.join(' / ');
-                        
-                        tableRows += `<tr>
-                            <td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td>
-                            <td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td>
-                            <td></td><td></td><td style="text-align:center;">${f.budget || ''}</td><td style="text-align:center;">${costCenterStr}</td>
-                        </tr>`;
+                        let costCenterArr = []; if (f.wbs) costCenterArr.push(f.wbs); if (f.network) costCenterArr.push(f.network); let costCenterStr = costCenterArr.join(' / ');
+                        tableRows += `<tr><td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td><td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td><td></td><td></td><td style="text-align:center;">${f.budget || ''}</td><td style="text-align:center;">${costCenterStr}</td></tr>`;
                     });
                     const carTypeStr = carInfo ? carInfo.type : ''; const carDeptStr = carInfo ? `${carInfo.phanek} ${carInfo.sangkat}` : ''; const thaiBahtText = ThaiBaht(totalAll);
 
                     printSection.innerHTML = `
                         <div style="font-family: 'Sarabun', sans-serif;">
-                            <div style="display:flex; align-items:center; margin-bottom:10px;">
-                                <img id="form2-logo" src="https://images2.imgbox.com/b3/4f/rQUZ8OAA_o.png" style="width: 100px; height: 100px; object-fit: contain; margin-right:15px; display:none;">
-                                <h2 id="fallback-title" style="margin:0; font-weight:bold; font-size:22px; display:none;">บันทึกข้อความ (การไฟฟ้าส่วนภูมิภาค)</h2>
-                            </div>
+                            <div style="display:flex; align-items:center; margin-bottom:10px;"><img id="form2-logo" src="https://images2.imgbox.com/b3/4f/rQUZ8OAA_o.png" style="width: 100px; height: 100px; object-fit: contain; margin-right:15px; display:none;"><h2 id="fallback-title" style="margin:0; font-weight:bold; font-size:22px; display:none;">บันทึกข้อความ (การไฟฟ้าส่วนภูมิภาค)</h2></div>
                             <div style="font-size:14px; line-height: 1.6; margin-bottom: 10px;">
                                 <div style="display: flex;"><div style="width: 50%;"><b>จาก</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${customFrom}</div><div style="width: 50%;"><b>ถึง</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${customTo}</div></div>
                                 <div style="display: flex;"><div style="width: 50%;"><b>เลขที่</b>&nbsp;&nbsp;&nbsp;${customNo}</div><div style="width: 50%;"><b>วันที่</b>&nbsp;&nbsp;&nbsp;${customDate}</div></div>
@@ -556,13 +614,7 @@
                                 <div style="display: flex;"><div style="width: 40px;"><b>เรียน</b></div><div>${customDear}</div></div>
                             </div>
                             <p style="font-size:14px; text-indent: 40px; margin-bottom:10px; line-height: 1.6; text-align: justify;">ตามความเห็นชอบและอนุมัติรายงานขอซื้อขอจ้างน้ำมันเชื้อเพลิง มีความประสงค์จัดซื้อน้ำมันเชื้อเพลิง สำหรับรถยนต์ทะเบียน <b>${plate}</b> ประเภท <b>${carTypeStr}</b> ประจำ <b>${carDeptStr}</b> ประจำเดือน <b>${reportMonth}</b> เพื่อใช้ในการปฏิบัติงาน จากสถานีบริการน้ำมันภายใต้การให้บริการ โดยบัตรเครดิตน้ำมันจากธนาคารกรุงไทย จำกัด (มหาชน) สาขานครพนม มีรายละเอียดดังนี้</p>
-                            <table class="print-table" style="margin-bottom: 0; border-bottom: none;">
-                                <thead>
-                                    <tr><th rowspan="2" style="width: 5%;">ลำดับ</th><th rowspan="2" style="width: 15%;">วันที่</th><th rowspan="2" style="width: 12%;">ค่าน้ำมัน<br>(ก่อน VAT)</th><th rowspan="2" style="width: 12%;">ภาษีมูลค่าเพิ่ม</th><th rowspan="2" style="width: 12%;">รวมเป็นเงิน<br>(รวมภาษี)</th><th colspan="2" style="width: 10%;">เครดิตภาษี</th><th rowspan="2" style="width: 10%;">งบ</th><th rowspan="2" style="width: 24%;">ศูนย์ต้นทุน/WBS/โครงข่าย</th></tr>
-                                    <tr><th style="width: 5%;">ได้</th><th style="width: 5%;">ไม่ได้</th></tr>
-                                </thead>
-                                <tbody>${tableRows}<tr style="font-weight:bold; background:#f9f9f9;"><td colspan="4" style="text-align:left; padding-left: 10px;">รวมเป็นเงินทั้งสิ้น ( ${thaiBahtText} )</td><td style="text-align:right;">${totalAll.toFixed(2)}</td><td colspan="4"></td></tr></tbody>
-                            </table>
+                            <table class="print-table" style="margin-bottom: 0; border-bottom: none;"><thead><tr><th rowspan="2" style="width: 5%;">ลำดับ</th><th rowspan="2" style="width: 15%;">วันที่</th><th rowspan="2" style="width: 12%;">ค่าน้ำมัน<br>(ก่อน VAT)</th><th rowspan="2" style="width: 12%;">ภาษีมูลค่าเพิ่ม</th><th rowspan="2" style="width: 12%;">รวมเป็นเงิน<br>(รวมภาษี)</th><th colspan="2" style="width: 10%;">เครดิตภาษี</th><th rowspan="2" style="width: 10%;">งบ</th><th rowspan="2" style="width: 24%;">ศูนย์ต้นทุน/WBS/โครงข่าย</th></tr><tr><th style="width: 5%;">ได้</th><th style="width: 5%;">ไม่ได้</th></tr></thead><tbody>${tableRows}<tr style="font-weight:bold; background:#f9f9f9;"><td colspan="4" style="text-align:left; padding-left: 10px;">รวมเป็นเงินทั้งสิ้น ( ${thaiBahtText} )</td><td style="text-align:right;">${totalAll.toFixed(2)}</td><td colspan="4"></td></tr></tbody></table>
                             <table style="width:100%; border:1.5px solid #000; border-top: none; border-collapse: collapse; font-size:13px;">
                                 <tr>
                                     <td style="width:50%; padding:10px 15px; border-right:1.5px solid #000; border-bottom:1.5px solid #000; vertical-align: top;">จึงเรียนมาเพื่อโปรดอนุมัติสั่งซื้อน้ำมันเชื้อเพลิงจาก บริษัท ปตท.จำกัด (มหาชน) และ บริษัท บางจากคอร์ปอเรชั่น จำกัด (มหาชน) ต่อไปด้วย จะขอบคุณยิ่ง<br><br><br><div style="text-align:center;">ลงชื่อ......................................................................<br>(......................................................................)<br>ตำแหน่ง......................................................................</div></td>
@@ -581,133 +633,70 @@
             }, 100);
         }
 
-        async function renderMainDashboard(container) {
-            const user = JSON.parse(localStorage.getItem('user_session')); container.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>กำลังโหลดภาพรวม...</div>`;
-            try { const res = await apiCall({ action: 'get_active_uses' }); if(res.status === 'success') activeUsesList = res.data; } catch(e) { activeUsesList = []; }
-            const totalCars = currentCarsList.length; const inUse = activeUsesList.length; const available = totalCars - inUse;
-            const myActiveCars = activeUsesList.filter(u => u.empName === user.name); let myTaskHtml = '';
-            if (myActiveCars.length > 0) {
-                myTaskHtml = `<h3 style="margin-bottom: 15px; font-size: 18px;"><i class="fas fa-bell text-warning"></i> รายการที่รอส่งคืน</h3><div class="card-grid" style="margin-top:0;">`;
-                myActiveCars.forEach(u => { myTaskHtml += `<div class="use-card" style="border-left: 4px solid var(--warning);"><div class="use-card-header"><div class="use-card-plate">${u.plate}</div></div><div class="use-card-detail"><strong>สถานที่:</strong> ${u.location}</div><button class="btn btn-warning" style="width:100%; margin-top:10px;" onclick="loadPage('return', document.querySelectorAll('.menu-item')[3])">ดำเนินการคืนรถ</button></div>`; }); myTaskHtml += `</div>`;
-            } else { myTaskHtml = `<p style="color: var(--text-light);"><i class="fas fa-check-circle text-success"></i> ยอดเยี่ยม! คุณไม่มีรายการยืมรถค้างอยู่</p>`; }
-
-            container.innerHTML = `
-                <div style="background: linear-gradient(135deg, var(--primary), #818CF8); color: white; padding: 30px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 4px 10px rgba(99,102,241,0.2);">
-                    <h1 style="font-size: 26px; font-weight: 600; margin-bottom: 8px;">สวัสดี, คุณ${user.name}! 👋</h1><p style="margin: 0; opacity: 0.9;"><i class="fas fa-building"></i> สังกัด: ${user.department} &nbsp;|&nbsp; <i class="fas fa-id-badge"></i> สิทธิ์: ${user.role}</p></div>
-                <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text);"><i class="fas fa-chart-pie"></i> สถานะรถยนต์วันนี้</h3>
-                <div class="stat-grid">
-                    <div class="stat-card"><div class="stat-icon" style="background: var(--primary);"><i class="fas fa-car"></i></div><div class="stat-info"><h3>${totalCars}</h3><p>รถทั้งหมดในระบบ</p></div></div>
-                    <div class="stat-card clickable success" onclick="showCarStatusDetails('available')"><div class="stat-icon" style="background: var(--success);"><i class="fas fa-check"></i></div><div class="stat-info"><h3>${available}</h3><p>พร้อมใช้งาน (คลิกดู)</p></div></div>
-                    <div class="stat-card clickable warning" onclick="showCarStatusDetails('inuse')"><div class="stat-icon" style="background: var(--warning);"><i class="fas fa-route"></i></div><div class="stat-info"><h3>${inUse}</h3><p>กำลังใช้งาน (คลิกดู)</p></div></div>
-                </div>
-                <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text);"><i class="fas fa-bolt"></i> เมนูด่วน</h3>
-                <div class="quick-actions"><div class="action-card" onclick="loadPage('use', document.querySelectorAll('.menu-item')[2])"><i class="fas fa-key"></i><span>ขอใช้งานรถ</span></div><div class="action-card" onclick="loadPage('check', document.querySelectorAll('.menu-item')[1])"><i class="fas fa-clipboard-check" style="color: var(--success);"></i><span>เช็คสภาพ</span></div><div class="action-card" onclick="loadPage('fuel', document.querySelectorAll('.menu-item')[4])"><i class="fas fa-gas-pump" style="color: var(--danger);"></i><span>เติมน้ำมัน</span></div></div>
-                <div class="form-box" style="margin-top: 0; padding: 20px;">${myTaskHtml}</div>
-            `;
-        }
-
         // ==========================================
-        // PAGE: FUEL DASHBOARD
+        // PAGE: CHECK, USE, RETURN CAR
         // ==========================================
-        async function renderFuelDashboard(container) {
-            container.innerHTML = `<div class="page-title" style="color: var(--danger);"><i class="fas fa-gas-pump"></i> ประวัติการเติมน้ำมัน</div><div class="form-box" style="margin-bottom: 20px;"><div class="flex-row"><div class="input-group flex-col"><select id="filter-fuel-time" onchange="filterFuelTable()"><option value="month" selected>📌 เฉพาะเดือนปัจจุบัน</option><option value="week">📅 7 วันล่าสุด</option><option value="all">📂 ดูทั้งหมด</option></select></div><div class="input-group flex-col"><select id="filter-fuel-debt" onchange="filterFuelTable()"><option value="all" selected>- ทุกสถานะตั้งหนี้ -</option><option value="pending">⏳ ยังไม่ตั้งหนี้</option><option value="completed">✅ ตั้งหนี้แล้ว</option></select></div><div class="input-group flex-col"><select id="filter-fuel-paytype" onchange="filterFuelTable()"><option value="all" selected>- ทุกประเภทจ่าย -</option><option value="เครดิต">เครดิต</option><option value="ฟรีการ์ด">ฟรีการ์ด</option></select></div><div class="input-group flex-col"><select id="filter-fuel-sangkat" onchange="updateFilterFuelPhanek()"><option value="">- ทุกสังกัด -</option></select></div><div class="input-group flex-col"><select id="filter-fuel-phanek" onchange="updateFilterFuelPlate()"><option value="">- ทุกแผนก -</option></select></div><div class="input-group flex-col"><select id="filter-fuel-plate" onchange="filterFuelTable()"><option value="">- ทุกทะเบียน -</option></select></div><div class="input-group flex-col"><button class="btn btn-danger" style="width: 100%; height: 44px;" onclick="openFuelModal('add')"><i class="fas fa-plus"></i> เพิ่มรายการ</button></div></div></div><div id="fuel-table-loader" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div><div class="table-container hidden" id="fuel-table-wrapper"><table style="width: 100%; min-width: 950px;"><thead><tr><th style="width: 12%;">วันที่</th><th style="width: 18%;">ผู้เติม/สังกัด</th><th style="width: 12%;">รถยนต์</th><th style="width: 25%;">รายละเอียดการเติม</th><th style="width: 15%;">โครงข่าย/WBS/งบ</th><th style="width: 10%; text-align:center;">เอกสาร</th><th style="width: 8%; text-align:center;">จัดการ</th></tr></thead><tbody id="fuel-table-body"></tbody></table><div id="fuel-pagination" class="pagination"></div></div>`;
-            const selectSangkat = document.getElementById('filter-fuel-sangkat'); [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => selectSangkat.add(new Option(s, s))); const selectPhanek = document.getElementById('filter-fuel-phanek'); [...new Set(currentCarsList.map(c => c.phanek))].forEach(p => selectPhanek.add(new Option(p, p))); const selectPlate = document.getElementById('filter-fuel-plate'); [...new Set(currentCarsList.map(c => c.plate))].forEach(pl => selectPlate.add(new Option(pl, pl))); await fetchFuelsData(); filterFuelTable(); 
-        }
-
-        function updateFilterFuelPhanek() { const s = document.getElementById('filter-fuel-sangkat').value; const selectP = document.getElementById('filter-fuel-phanek'); const selectPl = document.getElementById('filter-fuel-plate'); selectP.innerHTML = '<option value="">- ทุกแผนก -</option>'; selectPl.innerHTML = '<option value="">- ทุกทะเบียน -</option>'; let filtered = currentCarsList; if(s) filtered = filtered.filter(c => c.sangkat === s); [...new Set(filtered.map(c => c.phanek))].forEach(p => selectP.add(new Option(p, p))); [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl))); filterFuelTable(); }
-        function updateFilterFuelPlate() { const s = document.getElementById('filter-fuel-sangkat').value; const p = document.getElementById('filter-fuel-phanek').value; const selectPl = document.getElementById('filter-fuel-plate'); selectPl.innerHTML = '<option value="">- ทุกทะเบียน -</option>'; let filtered = currentCarsList; if(s) filtered = filtered.filter(c => c.sangkat === s); if(p) filtered = filtered.filter(c => c.phanek === p); [...new Set(filtered.map(c => c.plate))].forEach(pl => selectPl.add(new Option(pl, pl))); filterFuelTable(); }
+        function renderInspectionPage(container) { container.innerHTML = `<div class="page-title" style="color: var(--success);"><i class="fas fa-wrench"></i> ตรวจเช็คสภาพรถ</div><div class="form-box"><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="ins-sangkat" onchange="updateInsPhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="ins-phanek" onchange="updateInsPlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ</label><select id="ins-plate"><option value="">- เลือกทะเบียนรถ -</option></select></div><div style="margin-top: 20px; margin-bottom:15px; font-weight:600; color:var(--success); border-bottom: 2px solid #E5E7EB; padding-bottom:8px;"><i class="fas fa-clipboard-list"></i> หัวข้อการตรวจเช็ค</div>${['ระบบไฟ (หน้า/เลี้ยว/เบรก)', 'ยาง และ ล้อ', 'ของเหลว (น้ำมัน/น้ำ)', 'แบตเตอรี่ และ สตาร์ท', 'ระบบเบรก และ ช่วงล่าง', 'ความสะอาดตัวรถ'].map((item, index) => `<div class="check-item"><label>${index+1}. ${item}</label><select id="check-${index+1}"><option value="✅ ปกติ">✅ ปกติ</option><option value="❌ ชำรุด">❌ ชำรุด</option></select></div>`).join('')}<div class="input-group" style="margin-top:20px;"><label>รายละเอียดชำรุด (หมายเหตุ)</label><textarea id="ins-note" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea></div><div class="input-group"><label>อัปโหลดภาพจุดชำรุด <span style="color:red;">*</span></label><input type="file" id="ins-image" accept="image/*"></div><button class="btn btn-success" style="width:100%; padding:14px; margin-top:15px;" id="submitInsBtn" onclick="submitInspection()"><i class="fas fa-save"></i> บันทึกตรวจสภาพ</button></div>`; const select = document.getElementById('ins-sangkat'); [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => select.add(new Option(s, s))); }
+        function updateInsPhanek() { const val = document.getElementById('ins-sangkat').value; const select = document.getElementById('ins-phanek'); select.innerHTML = '<option value="">- เลือกแผนก -</option>'; document.getElementById('ins-plate').innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; if(val) [...new Set(currentCarsList.filter(c => c.sangkat === val).map(c => c.phanek))].forEach(p => select.add(new Option(p, p))); }
+        function updateInsPlate() { const s = document.getElementById('ins-sangkat').value; const p = document.getElementById('ins-phanek').value; const select = document.getElementById('ins-plate'); select.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => select.add(new Option(c.plate, c.plate))); }
+        async function submitInspection() { const plate = document.getElementById('ins-plate').value; if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); const imgFile = document.getElementById('ins-image').files[0]; if(!imgFile) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลดภาพจุดชำรุดด้วยครับ', 'warning'); document.getElementById('submitInsBtn').disabled = true; document.getElementById('submitInsBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; let base64String = await compressImage(imgFile); const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_inspection', empName: user.name, sangkat: document.getElementById('ins-sangkat').value, phanek: document.getElementById('ins-phanek').value, plate: plate, c_light: document.getElementById('check-1').value, c_tire: document.getElementById('check-2').value, c_fluid: document.getElementById('check-3').value, c_battery: document.getElementById('check-4').value, c_brake: document.getElementById('check-5').value, c_clean: document.getElementById('check-6').value, note: document.getElementById('ins-note').value, imageBase64: base64String }; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); loadPage('check'); } } catch(e) {} finally { document.getElementById('submitInsBtn').disabled = false; document.getElementById('submitInsBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกตรวจสภาพ'; } }
         
-        function filterFuelTable() {
-            const sEl = document.getElementById('filter-fuel-sangkat'); const pEl = document.getElementById('filter-fuel-phanek'); const plEl = document.getElementById('filter-fuel-plate'); const tEl = document.getElementById('filter-fuel-time'); const dEl = document.getElementById('filter-fuel-debt'); const ptEl = document.getElementById('filter-fuel-paytype'); if(!sEl || !pEl || !plEl || !tEl || !dEl || !ptEl) return;
-            const timeFilter = tEl.value; const debtFilter = dEl.value; const sangkat = sEl.value; const phanek = pEl.value; const plate = plEl.value; const payTypeFilter = ptEl.value; const now = new Date();
-            currentFilteredFuels = currentFuelsList.filter(f => {
-                let dateMatch = true; if(f.date) { let d = new Date(f.date); if(isNaN(d)) { const parts = f.date.split(' ')[0].split('/'); if(parts.length===3) d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); } if(!isNaN(d)) { if (timeFilter === 'month') { dateMatch = (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()); } else if (timeFilter === 'week') { const diffDays = (now - d) / (1000 * 60 * 60 * 24); dateMatch = diffDays <= 7 && diffDays >= 0; } } }
-                let debtMatch = true; if (debtFilter === 'pending') debtMatch = !f.isDebt; else if (debtFilter === 'completed') debtMatch = f.isDebt;
-                let payTypeMatch = true; if (payTypeFilter !== 'all') payTypeMatch = f.payType === payTypeFilter;
-                return dateMatch && debtMatch && payTypeMatch && (!sangkat || f.sangkat === sangkat) && (!phanek || f.phanek === phanek) && (!plate || f.plate === plate);
-            });
-            const loader = document.getElementById('fuel-table-loader'); const wrapper = document.getElementById('fuel-table-wrapper'); if (loader) loader.classList.add('hidden'); if (wrapper) wrapper.classList.remove('hidden'); renderFuelTablePage(1);
+        function renderUsePage(container) { 
+            container.innerHTML = `<div class="page-title" style="color: var(--primary);"><i class="fas fa-car"></i> ขอใช้งานรถยนต์</div><div class="form-box"><div class="flex-row"><div class="input-group flex-col"><label>สังกัด</label><select id="use-sangkat" onchange="updateUsePhanek()"><option value="">- เลือกสังกัด -</option></select></div><div class="input-group flex-col"><label>แผนก</label><select id="use-phanek" onchange="updateUsePlate()"><option value="">- เลือกแผนก -</option></select></div></div><div class="input-group"><label>ทะเบียนรถ</label><select id="use-plate" onchange="autoFillUseCarDetails()"><option value="">- เลือกทะเบียนรถ -</option></select><div id="use-tax-warning" style="margin-top: 8px;"></div></div><div class="flex-row" style="background:#F9FAFB; padding:15px; border-radius:8px; border:1px dashed var(--border); margin-bottom:16px;"><div class="input-group flex-col" style="margin-bottom:0;"><label>ยี่ห้อ</label><input type="text" id="use-brand" readonly placeholder="Auto-fill"></div><div class="input-group flex-col" style="margin-bottom:0;"><label>ประเภทรถ</label><input type="text" id="use-type" readonly placeholder="Auto-fill"></div></div><hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;"><div class="input-group"><label>เลขไมล์ก่อนใช้งาน</label><input type="number" id="use-startMile"></div><div class="input-group"><label>สถานที่ (จุดหมายปลายทาง)</label><input type="text" id="use-location"></div><button class="btn" style="width:100%; padding: 14px; margin-top:15px; font-size:16px;" id="submitUseBtn" onclick="submitUseCar()"><i class="fas fa-paper-plane"></i> ยืนยันการขอใช้รถ</button></div>`; 
+            const select = document.getElementById('use-sangkat'); [...new Set(currentCarsList.map(c => c.sangkat))].forEach(s => select.add(new Option(s, s))); 
         }
-
-        function renderFuelTablePage(page) {
-            const user = JSON.parse(localStorage.getItem('user_session')); currentFuelPage = page; const tbody = document.getElementById('fuel-table-body'); const paginationDiv = document.getElementById('fuel-pagination'); if (!tbody) return; tbody.innerHTML = ''; paginationDiv.innerHTML = '';
-            if(currentFilteredFuels.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">ไม่มีข้อมูลประวัติการเติมน้ำมัน</td></tr>`; return; }
-            const start = (page - 1) * FUEL_ITEMS_PER_PAGE; const end = start + FUEL_ITEMS_PER_PAGE; const pageData = currentFilteredFuels.slice(start, end);
-
-            pageData.forEach(f => {
-                const formattedDate = formatDisplayDate(f.date); 
-                let debtBadge = `<span class="badge-nodebt">ยังไม่ตั้งหนี้</span>`;
-                if(f.isDebt) { debtBadge = `<span class="badge-debt"><i class="fas fa-check-circle"></i> ตั้งหนี้แล้ว</span>`; if(f.debtNo && f.debtNo !== '-') { debtBadge += `<br><span style="font-size:12px; color:#065F46; font-weight:600; display:inline-block; margin-top:4px;">(${f.debtNo})</span>`; } }
-                let pTypeBadge = f.payType ? `<br><span class="badge-paytype"><i class="fas fa-wallet"></i> ${f.payType}</span>` : '';
-                let docHtml = ''; if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> บิล</a><br>`; if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> ยพ.</a>`; if(!docHtml) docHtml = '-';
-                let actionHtml = `<button class="btn btn-warning btn-sm" style="padding: 6px 10px;" onclick="openFuelModal('edit', '${f.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" style="padding: 6px 10px;" onclick="deleteFuel('${f.id}')"><i class="fas fa-trash"></i></button>`;
-                
-                if (user.role === 'Admin' || user.role === 'ผู้ช่วย Admin') {
-                    actionHtml = `<button class="btn btn-sm" style="background:#6366F1; color:white; margin-bottom: 4px; width: 100%;" onclick="openBudgetModal('${f.id}')"><i class="fas fa-coins"></i> ระบุงบ</button><br>` + actionHtml;
-                    if (!f.isDebt) { actionHtml = `<button class="btn btn-success btn-sm" style="margin-bottom: 4px; width: 100%;" onclick="markDebt('${f.id}')"><i class="fas fa-check-circle"></i> ตั้งหนี้</button><br>` + actionHtml; }
-                }
-                let budgetBadge = f.budget ? `<br><span class="badge-budget"><i class="fas fa-hashtag"></i> งบ: ${f.budget}</span>` : '';
-
-                tbody.innerHTML += `<tr>
-                    <td style="color: var(--text-light);">${formattedDate}</td>
-                    <td><b>${f.empName}</b><br><span style="font-size:12px; color:var(--text-light);">${f.sangkat} - ${f.phanek}</span></td>
-                    <td><span style="font-weight: 500; color: var(--info);">${f.plate}</span><br>${debtBadge}${pTypeBadge}</td>
-                    <td><div style="line-height: 1.5;"><span style="color: var(--text);"><b>ปั๊ม:</b> ${f.station || '-'}</span><br><span style="font-size:13px; color:var(--text-light);">ใบกำกับภาษี: ${f.taxInvoice || '-'}</span><br><span style="font-weight: 600; color: var(--danger);">ยอดชำระ: ฿${f.totalAmount}</span></div></td>
-                    <td><div style="line-height: 1.5;"><span style="font-size:13px; color:var(--text-light);"><b>WBS:</b> ${f.wbs || '-'}</span><br><span style="font-size:13px; color:var(--text-light);"><b>โครงข่าย:</b> ${f.network || '-'}</span>${budgetBadge}</div></td>
-                    <td style="text-align:center;">${docHtml}</td><td style="text-align:center;">${actionHtml}</td>
-                </tr>`;
-            });
-            const totalPages = Math.ceil(currentFilteredFuels.length / FUEL_ITEMS_PER_PAGE); if(totalPages > 1) { for(let i = 1; i <= totalPages; i++) { paginationDiv.innerHTML += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="renderFuelTablePage(${i})">${i}</button>`; } }
-        }
-
-        function openBudgetModal(id) { const f = currentFuelsList.find(item => item.id === id); document.getElementById('budget-fuel-id').value = id; document.getElementById('budget-value').value = f ? (f.budget || '') : ''; document.getElementById('budgetModal').style.display = 'flex'; }
-        async function submitBudget() {
-            const id = document.getElementById('budget-fuel-id').value; const budgetVal = document.getElementById('budget-value').value; document.getElementById('submitBudgetBtn').disabled = true; document.getElementById('submitBudgetBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
-            try { const res = await apiCall({ action: 'save_fuel_budget', id: id, budget: budgetVal }); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('budgetModal').style.display = 'none'; await fetchFuelsData(); filterFuelTable(); } } catch(e) {} finally { document.getElementById('submitBudgetBtn').disabled = false; document.getElementById('submitBudgetBtn').innerHTML = 'บันทึกเลขงบ'; }
-        }
-        function markDebt(id) { Swal.fire({ title: 'ระบุเลขตั้งหนี้', input: 'text', inputPlaceholder: 'กรอกเลขตั้งหนี้ (ถ้ามี)', showCancelButton: true, confirmButtonColor: '#10B981', confirmButtonText: 'บันทึกตั้งหนี้', cancelButtonText: 'ยกเลิก' }).then(async (result) => { if (result.isConfirmed) { const debtNo = result.value || '-'; try { const res = await apiCall({ action: 'mark_fuel_debt', id: id, debtNo: debtNo }); if(res.status === 'success') { Swal.fire('สำเร็จ', '', 'success'); await fetchFuelsData(); filterFuelTable(); } } catch(e) {} } }); }
-
-        function openFuelModal(mode, id = null) {
-            document.getElementById('fuelModal').style.display = 'flex'; const user = JSON.parse(localStorage.getItem('user_session')); const canManageDebt = (user.role === 'Admin' || user.role === 'ผู้ช่วย Admin');
-            const selectSangkat = document.getElementById('fuel-sangkat'); const uniqueSangkat = [...new Set(currentCarsList.map(c => c.sangkat))]; selectSangkat.innerHTML = '<option value="">- เลือกสังกัด -</option>'; uniqueSangkat.forEach(s => selectSangkat.add(new Option(s, s)));
-            const now = new Date(); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, '0'); const d = String(now.getDate()).padStart(2, '0'); const todayStr = `${y}-${m}-${d}`;
-
-            if(mode === 'add') {
-                document.getElementById('fuelModalTitle').innerText = 'บันทึกข้อมูลเติมน้ำมัน'; document.getElementById('fuel-id').value = ''; document.getElementById('fuel-debt-container').style.display = 'none';
-                ['fuel-sangkat','fuel-phanek','fuel-plate','fuel-brand','fuel-type','fuel-mile','fuel-type-oil','fuel-station','fuel-tax-invoice','fuel-price','fuel-quantity','fuel-total','fuel-book','fuel-no','fuel-network','fuel-wbs', 'fuel-pay-type'].forEach(el => document.getElementById(el).value = '');
-                document.getElementById('fuel-subtotal').innerText = '0.00'; document.getElementById('fuel-vat').innerText = '0.00';
-                document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = ''; document.getElementById('fuel-is-debt').checked = false; 
-                document.getElementById('req-receipt').innerHTML = '* บังคับ'; document.getElementById('req-yp').innerHTML = '* บังคับ'; document.getElementById('fuel-date').value = todayStr;
-            } else if (id) {
-                document.getElementById('fuelModalTitle').innerText = 'แก้ไขรายการเติมน้ำมัน'; document.getElementById('fuel-debt-container').style.display = canManageDebt ? 'flex' : 'none';
-                const f = currentFuelsList.find(item => item.id === id);
-                if(f) {
-                    document.getElementById('fuel-id').value = f.id; document.getElementById('fuel-is-debt').checked = f.isDebt; document.getElementById('fuel-sangkat').value = f.sangkat; updateFuelPhanek(); document.getElementById('fuel-phanek').value = f.phanek; updateFuelPlate(); document.getElementById('fuel-plate').value = f.plate; autoFillFuelCarDetails(); document.getElementById('fuel-mile').value = f.mile; document.getElementById('fuel-type-oil').value = f.fuelType; document.getElementById('fuel-station').value = f.station; document.getElementById('fuel-tax-invoice').value = f.taxInvoice; document.getElementById('fuel-price').value = f.price; document.getElementById('fuel-quantity').value = f.quantity; document.getElementById('fuel-total').value = f.totalAmount; recalculateVatFromTotal(); document.getElementById('fuel-book').value = f.bookNo; document.getElementById('fuel-no').value = f.docNo; document.getElementById('fuel-network').value = f.network; document.getElementById('fuel-wbs').value = f.wbs; document.getElementById('fuel-img-receipt').value = ''; document.getElementById('fuel-img-yp').value = ''; document.getElementById('req-receipt').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; document.getElementById('req-yp').innerHTML = '(เลือกใหม่ถ้าต้องการเปลี่ยน)'; document.getElementById('fuel-pay-type').value = f.payType || '';
-                    let dText = ''; if(f.date) { let dt = new Date(f.date); if(isNaN(dt)) { const p = f.date.split(' ')[0].split('/'); dt = new Date(`${p[2]}-${p[1]}-${p[0]}`); } if(!isNaN(dt)) { dText = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; } } document.getElementById('fuel-date').value = dText;
+        function updateUsePhanek() { const val = document.getElementById('use-sangkat').value; const select = document.getElementById('use-phanek'); select.innerHTML = '<option value="">- เลือกแผนก -</option>'; document.getElementById('use-plate').innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('use-brand').value = ''; document.getElementById('use-type').value = ''; document.getElementById('use-tax-warning').innerHTML = ''; if(val) [...new Set(currentCarsList.filter(c => c.sangkat === val).map(c => c.phanek))].forEach(p => select.add(new Option(p, p))); }
+        function updateUsePlate() { const s = document.getElementById('use-sangkat').value; const p = document.getElementById('use-phanek').value; const select = document.getElementById('use-plate'); select.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('use-brand').value = ''; document.getElementById('use-type').value = ''; document.getElementById('use-tax-warning').innerHTML = ''; if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => select.add(new Option(c.plate, c.plate))); }
+        
+        function autoFillUseCarDetails() { 
+            const plate = document.getElementById('use-plate').value; const car = currentCarsList.find(c => c.plate === plate); 
+            document.getElementById('use-brand').value = car ? car.brand : ''; document.getElementById('use-type').value = car ? car.type : ''; 
+            
+            const warningDiv = document.getElementById('use-tax-warning');
+            if (warningDiv) {
+                warningDiv.innerHTML = '';
+                if (car && car.taxDate) {
+                    let tDate = new Date(car.taxDate); 
+                    if (isNaN(tDate)) { const parts = car.taxDate.toString().split('/'); if (parts.length === 3) tDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
+                    if (!isNaN(tDate)) {
+                        const now = new Date(); const diffTime = tDate - now; const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays < 0) { warningDiv.innerHTML = `<span style="color:var(--danger); font-size:13px; font-weight:600;"><i class="fas fa-times-circle"></i> ภาษีรถคันนี้หมดอายุแล้ว! (เลยมา ${Math.abs(diffDays)} วัน)</span>`; } 
+                        else if (diffDays <= 90) { warningDiv.innerHTML = `<span style="color:var(--warning); font-size:13px; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> ภาษีรถใกล้หมดอายุ (เหลือ ${diffDays} วัน)</span>`; } 
+                        else { warningDiv.innerHTML = `<span style="color:var(--success); font-size:13px; font-weight:600;"><i class="fas fa-check-circle"></i> ภาษีปกติ (เหลือ ${diffDays} วัน)</span>`; }
+                    }
                 }
             }
         }
-        function updateFuelPhanek() { const val = document.getElementById('fuel-sangkat').value; const select = document.getElementById('fuel-phanek'); select.innerHTML = '<option value="">- เลือกแผนก -</option>'; document.getElementById('fuel-plate').innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('fuel-brand').value = ''; document.getElementById('fuel-type').value = ''; if(val) [...new Set(currentCarsList.filter(c => c.sangkat === val).map(c => c.phanek))].forEach(p => select.add(new Option(p, p))); }
-        function updateFuelPlate() { const s = document.getElementById('fuel-sangkat').value; const p = document.getElementById('fuel-phanek').value; const select = document.getElementById('fuel-plate'); select.innerHTML = '<option value="">- เลือกทะเบียนรถ -</option>'; document.getElementById('fuel-brand').value = ''; document.getElementById('fuel-type').value = ''; if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => select.add(new Option(c.plate, c.plate))); }
-        function autoFillFuelCarDetails() { const plate = document.getElementById('fuel-plate').value; const car = currentCarsList.find(c => c.plate === plate); document.getElementById('fuel-brand').value = car ? car.brand : ''; document.getElementById('fuel-type').value = car ? car.type : ''; }
-        function calculateFuel() { const price = parseFloat(document.getElementById('fuel-price').value) || 0; const qty = parseFloat(document.getElementById('fuel-quantity').value) || 0; document.getElementById('fuel-total').value = (price * qty).toFixed(2); recalculateVatFromTotal(); }
-        function recalculateVatFromTotal() { const total = parseFloat(document.getElementById('fuel-total').value) || 0; document.getElementById('fuel-subtotal').innerText = ((total * 100) / 107).toFixed(2); document.getElementById('fuel-vat').innerText = ((total * 7) / 107).toFixed(2); }
         
-        async function submitFuel() { 
-            const id = document.getElementById('fuel-id').value; const fuelDate = document.getElementById('fuel-date').value; const payType = document.getElementById('fuel-pay-type').value;
-            const isDebt = document.getElementById('fuel-is-debt').checked; const sangkat = document.getElementById('fuel-sangkat').value; const phanek = document.getElementById('fuel-phanek').value; const plate = document.getElementById('fuel-plate').value; const brand = document.getElementById('fuel-brand').value; const type = document.getElementById('fuel-type').value; const mile = document.getElementById('fuel-mile').value; const fuelType = document.getElementById('fuel-type-oil').value; const station = document.getElementById('fuel-station').value; const taxInvoice = document.getElementById('fuel-tax-invoice').value; const price = document.getElementById('fuel-price').value; const quantity = document.getElementById('fuel-quantity').value; const totalAmount = document.getElementById('fuel-total').value; const subtotal = document.getElementById('fuel-subtotal').innerText; const vat = document.getElementById('fuel-vat').innerText; const book = document.getElementById('fuel-book').value; const docNo = document.getElementById('fuel-no').value; const network = document.getElementById('fuel-network').value; const wbs = document.getElementById('fuel-wbs').value; const receiptFile = document.getElementById('fuel-img-receipt').files[0]; const ypFile = document.getElementById('fuel-img-yp').files[0]; 
-            if (!fuelDate) return Swal.fire('แจ้งเตือน', 'กรุณาระบุวันที่เติมน้ำมัน', 'warning'); if (!payType) return Swal.fire('แจ้งเตือน', 'กรุณาระบุประเภทการจ่ายเงิน', 'warning'); if (!id && (!receiptFile || !ypFile)) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลดเอกสารบิลและยพ.ให้ครบถ้วน', 'warning'); if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); 
-            const confirmResult = await Swal.fire({ title: 'ตรวจสอบข้อมูลก่อนบันทึก', html: `<div style="text-align: left; font-size: 14px; background: #F9FAFB; padding: 15px; border-radius: 8px; max-height: 50vh; overflow-y: auto; border: 1px solid #E5E7EB;"><div style="margin-bottom: 10px; color: ${isDebt ? '#065F46' : '#6B7280'}; font-weight:bold; display: ${id ? 'block' : 'none'};"><i class="fas ${isDebt ? 'fa-check-circle' : 'fa-times-circle'}"></i> สถานะ: ${isDebt ? 'ตั้งหนี้แล้ว' : 'ยังไม่ตั้งหนี้'}</div><p style="margin-bottom: 5px;"><b>วันที่เติม:</b> ${fuelDate}</p><p style="margin-bottom: 5px;"><b>ประเภทจ่าย:</b> ${payType}</p><p style="margin-bottom: 5px;"><b>รถยนต์:</b> ${plate} (${brand} ${type})</p><p style="margin-bottom: 5px;"><b>สังกัด/แผนก:</b> ${sangkat || '-'} / ${phanek || '-'}</p><p style="margin-bottom: 5px;"><b>เลขไมล์:</b> ${mile || '-'}</p><hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;"><p style="margin-bottom: 5px;"><b>สถานีบริการ:</b> ${station || '-'} (บิล: ${taxInvoice || '-'})</p><p style="margin-bottom: 5px;"><b>เล่มที่/เลขที่:</b> ${book || '-'} / ${docNo || '-'}</p><p style="margin-bottom: 5px;"><b>เชื้อเพลิง:</b> ${fuelType || '-'}</p><p style="margin-bottom: 5px;"><b>ปริมาณ:</b> ${quantity || 0} ลิตร (ราคา ฿${price || 0}/ลิตร)</p><p style="margin-bottom: 5px;"><b>โครงข่าย/WBS:</b> ${network || '-'} / ${wbs || '-'}</p><hr style="border-top: 1px dashed #E5E7EB; margin: 10px 0;"><div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>มูลค่าสินค้า:</span> <span>฿${subtotal}</span></div><div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>VAT 7%:</span> <span>฿${vat}</span></div><div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 16px;"><b>ยอดชำระรวม:</b> <b style="color:var(--danger);">฿${totalAmount || '0.00'}</b></div></div>`, icon: 'info', showCancelButton: true, confirmButtonColor: '#10B981', cancelButtonColor: '#6B7280', confirmButtonText: '<i class="fas fa-check"></i> ยืนยันการบันทึก', cancelButtonText: 'กลับไปแก้ไข' }); if (!confirmResult.isConfirmed) return; 
-            document.getElementById('submitFuelBtn').disabled = true; document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบีบอัดภาพและบันทึก...'; 
-            const receiptB64 = await compressImage(receiptFile); const ypB64 = await compressImage(ypFile); const user = JSON.parse(localStorage.getItem('user_session')); 
-            const payload = { action: id ? 'edit_fuel' : 'add_fuel', id: id, fuelDate: fuelDate, payType: payType, empName: user.name, sangkat: sangkat, phanek: phanek, plate: plate, mile: mile, fuelType: fuelType, station: station, taxInvoice: taxInvoice, price: price, quantity: quantity, totalAmount: totalAmount, bookNo: book, docNo: docNo, network: network, wbs: wbs, isDebt: isDebt, receiptBase64: receiptB64, receiptName: receiptFile ? receiptFile.name : '', ypBase64: ypB64, ypName: ypFile ? ypFile.name : '' }; 
-            try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('fuelModal').style.display = 'none'; await fetchFuelsData(); filterFuelTable(); } else { Swal.fire('ผิดพลาด', res.message, 'error'); } } catch(e) {} finally { document.getElementById('submitFuelBtn').disabled = false; document.getElementById('submitFuelBtn').innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล'; } 
-        }
-        function deleteFuel(id) { Swal.fire({ title: 'ลบรายการ?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'ลบเลย!' }).then(async (result) => { if (result.isConfirmed) { try { const res = await apiCall({ action: 'delete_fuel', id: id }); if(res.status === 'success') { Swal.fire('ลบแล้ว', '', 'success'); await fetchFuelsData(); filterFuelTable(); } } catch(e) {} } }); }
+        async function submitUseCar() { 
+            const plate = document.getElementById('use-plate').value; const startMile = document.getElementById('use-startMile').value; const location = document.getElementById('use-location').value; 
+            if(!plate || !startMile || !location) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning'); 
+            
+            const car = currentCarsList.find(c => c.plate === plate);
+            let taxWarningMsg = '';
+            if (car && car.taxDate) {
+                let tDate = new Date(car.taxDate); 
+                if (isNaN(tDate)) { const parts = car.taxDate.toString().split('/'); if (parts.length === 3) tDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
+                if (!isNaN(tDate)) {
+                    const now = new Date(); const diffTime = tDate - now; const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) { taxWarningMsg = `<div style="color:var(--danger);font-size:16px;"><b><i class="fas fa-times-circle"></i> ภาษีหมดอายุแล้ว</b><br>เลยกำหนดมา ${Math.abs(diffDays)} วัน</div>`; } 
+                    else if (diffDays <= 90) { taxWarningMsg = `<div style="color:var(--warning);font-size:16px;"><b><i class="fas fa-exclamation-triangle"></i> ภาษีใกล้หมดอายุ</b><br>เหลือเวลาอีก ${diffDays} วัน</div>`; }
+                }
+            }
+            if (taxWarningMsg) {
+                const confirmTax = await Swal.fire({ title: '⚠️ แจ้งเตือนสถานะภาษี', html: taxWarningMsg + '<br><br>คุณต้องการยืนยันขอใช้รถคันนี้ต่อหรือไม่?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#10B981', cancelButtonColor: '#6B7280', confirmButtonText: 'ยืนยันใช้งาน', cancelButtonText: 'ยกเลิก' });
+                if (!confirmTax.isConfirmed) return;
+            }
 
-        // ==========================================
-        // ADMIN USERS / CARS Management
-        // ==========================================
+            document.getElementById('submitUseBtn').disabled = true; document.getElementById('submitUseBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; 
+            const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_use_car', empName: user.name, sangkat: document.getElementById('use-sangkat').value, phanek: document.getElementById('use-phanek').value, plate: plate, brand: document.getElementById('use-brand').value, type: document.getElementById('use-type').value, startMile: startMile, location: location }; 
+            try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); loadPage('use'); } } catch(e) {} finally { document.getElementById('submitUseBtn').disabled = false; document.getElementById('submitUseBtn').innerHTML = '<i class="fas fa-paper-plane"></i> ยืนยันการขอใช้รถ'; } 
+        }
+
+        async function renderReturnPage(container) { container.innerHTML = `<div class="page-title" style="color: var(--warning);"><i class="fas fa-undo"></i> รถที่อยู่ระหว่างการใช้งาน</div><div id="active-list-loader" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div><div class="card-grid" id="active-use-container"></div>`; try { const res = await apiCall({ action: 'get_active_uses' }); const loader = document.getElementById('active-list-loader'); const grid = document.getElementById('active-use-container'); if(!loader || !grid) return; loader.style.display = 'none'; if(res.data.length === 0) { grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 30px; background:white; border-radius:12px;">ไม่มีรถที่กำลังใช้งานอยู่</div>`; return; } res.data.forEach(use => { grid.innerHTML += `<div class="use-card"><div class="use-card-header"><div class="use-card-plate"><i class="fas fa-car-side"></i> ${use.plate}</div><div class="use-card-badge">กำลังใช้งาน</div></div><div class="use-card-detail"><strong>ผู้เบิก:</strong> ${use.empName}</div><div class="use-card-detail"><strong>สถานที่:</strong> ${use.location}</div><div class="use-card-detail" style="margin-bottom: 15px;"><strong>ไมล์เริ่มต้น:</strong> ${use.startMile}</div><button class="btn btn-warning" style="width:100%;" onclick="openReturnModal('${use.useId}', '${use.plate}', '${use.startMile}')"><i class="fas fa-key"></i> ดำเนินการคืนรถ</button></div>`; }); } catch (error) {} }
+        function openReturnModal(useId, plate, startMile) { document.getElementById('returnModal').style.display = 'flex'; document.getElementById('return-useId').value = useId; document.getElementById('return-display-plate').innerHTML = `<i class="fas fa-car"></i> ทะเบียน: ${plate}`; document.getElementById('return-display-startMile').innerText = `ไมล์ก่อนเดินทาง: ${startMile}`; document.getElementById('return-endMile').value = ''; }
+        async function submitReturn() { const endMile = document.getElementById('return-endMile').value; if(!endMile) return Swal.fire('แจ้งเตือน', 'กรุณาระบุเลขไมล์ล่าสุด', 'warning'); document.getElementById('submitReturnBtn').disabled = true; document.getElementById('submitReturnBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; const user = JSON.parse(localStorage.getItem('user_session')); const payload = { action: 'save_return_car', useId: document.getElementById('return-useId').value, endMile: endMile, empName: user.name }; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('returnModal').style.display = 'none'; loadPage('return'); } } catch(e) {} finally { document.getElementById('submitReturnBtn').disabled = false; document.getElementById('submitReturnBtn').innerHTML = 'ยืนยันการคืนรถ'; } }
+
         function renderAdminUserPage(container) { container.innerHTML = `<div class="page-header"><h2 class="page-title"><i class="fas fa-users text-primary"></i> ฐานข้อมูลผู้ใช้งาน</h2><button class="btn" onclick="openUserModal('add')"><i class="fas fa-plus"></i> เพิ่มผู้ใช้ใหม่</button></div><div id="user-table-loader" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div><div class="table-container hidden" id="user-table-wrapper"><table><thead><tr><th>รหัสพนักงาน</th><th>ชื่อ-สกุล</th><th>สังกัด</th><th>สิทธิ์ (Role)</th><th style="text-align:center;">จัดการ</th></tr></thead><tbody id="admin-user-table-body"></tbody></table></div>`; fetchUsersData().then(() => { document.getElementById('user-table-loader').classList.add('hidden'); document.getElementById('user-table-wrapper').classList.remove('hidden'); const tbody = document.getElementById('admin-user-table-body'); if(currentUsersList.length === 0) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">ไม่มีข้อมูล</td></tr>`; currentUsersList.forEach(u => { const roleBadge = u.role === 'Admin' ? `<span style="background:#FEE2E2; color:#991B1B; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:600;">Admin</span>` : (u.role === 'ผู้ช่วย Admin' ? `<span style="background:#FEF3C7; color:#B45309; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:600;">ผู้ช่วย Admin</span>` : `<span style="background:#E0E7FF; color:#3730A3; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:600;">User</span>`); tbody.innerHTML += `<tr><td>${u.empId}</td><td style="font-weight: 500;">${u.name}</td><td>${u.department}</td><td>${roleBadge}</td><td style="text-align:center;"><button class="btn btn-warning btn-sm" style="padding: 6px 10px;" onclick="openUserModal('edit', '${u.empId}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" style="padding: 6px 10px;" onclick="deleteUser('${u.empId}')"><i class="fas fa-trash"></i></button></td></tr>`; }); }); }
         function openUserModal(mode, empId = null) { document.getElementById('userModal').style.display = 'flex'; if(mode === 'add') { document.getElementById('userModalTitle').innerText = 'เพิ่มผู้ใช้ใหม่'; document.getElementById('userOriginalEmpId').value = ''; ['userEmpId','userName','userDept'].forEach(el => document.getElementById(el).value = ''); document.getElementById('userRole').value = 'User'; } else if (empId) { document.getElementById('userModalTitle').innerText = 'แก้ไขผู้ใช้'; const u = currentUsersList.find(item => item.empId.toString() === empId.toString()); if(u) { document.getElementById('userOriginalEmpId').value = u.empId; document.getElementById('userEmpId').value = u.empId; document.getElementById('userName').value = u.name; document.getElementById('userDept').value = u.department; document.getElementById('userRole').value = u.role; } } }
         async function saveUser() { const originalEmpId = document.getElementById('userOriginalEmpId').value; const empId = document.getElementById('userEmpId').value; const name = document.getElementById('userName').value; const dept = document.getElementById('userDept').value; const role = document.getElementById('userRole').value; if(!empId || !name) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสและชื่อ', 'warning'); const payload = { action: originalEmpId ? 'edit_user' : 'add_user', originalEmpId: originalEmpId, empId: empId, name: name, department: dept, role: role }; document.getElementById('saveUserBtn').disabled = true; try { const res = await apiCall(payload); if(res.status === 'success') { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('userModal').style.display = 'none'; loadPage('user-settings'); } else { Swal.fire('ผิดพลาด', res.message, 'error'); } } catch(e) {} finally { document.getElementById('saveUserBtn').disabled = false; } }
@@ -723,12 +712,7 @@
                     <div style="flex:1; background:#FEE2E2; padding:10px; border-radius:8px; text-align:center;"><div style="font-size:12px; color:#DC2626;">หมดอายุแล้ว</div><div style="font-size:20px; font-weight:bold; color:#DC2626;" id="admin-stat-danger">0</div></div>
                 </div>
                 <div class="flex-row">
-                    <div class="input-group flex-col" style="margin-bottom:0;">
-                        <label>กรองตามสังกัด</label>
-                        <select id="admin-filter-sangkat" onchange="filterAdminCarTable()">
-                            <option value="all">- แสดงทุกสังกัด -</option>
-                        </select>
-                    </div>
+                    <div class="input-group flex-col" style="margin-bottom:0;"><label>กรองตามสังกัด</label><select id="admin-filter-sangkat" onchange="filterAdminCarTable()"><option value="all">- แสดงทุกสังกัด -</option></select></div>
                     <div class="input-group flex-col" style="margin-bottom:0;">
                         <label>สถานะภาษี</label>
                         <select id="admin-filter-tax" onchange="filterAdminCarTable()">
@@ -747,25 +731,16 @@
         }
 
         function filterAdminCarTable() {
-            const filterSangkat = document.getElementById('admin-filter-sangkat').value;
-            const filterTax = document.getElementById('admin-filter-tax').value;
-            let filteredList = currentCarsList;
-            const now = new Date();
-
+            const filterSangkat = document.getElementById('admin-filter-sangkat').value; const filterTax = document.getElementById('admin-filter-tax').value;
+            let filteredList = currentCarsList; const now = new Date();
             if(filterSangkat !== 'all') { filteredList = filteredList.filter(c => c.sangkat === filterSangkat); }
-            
             if(filterTax !== 'all') {
                 filteredList = filteredList.filter(car => {
                     if (!car.taxDate) return false;
-                    let tDate = new Date(car.taxDate); 
-                    if (isNaN(tDate)) { const parts = car.taxDate.toString().split('/'); if (parts.length === 3) tDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
+                    let tDate = new Date(car.taxDate); if (isNaN(tDate)) { const parts = car.taxDate.toString().split('/'); if (parts.length === 3) tDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
                     if (isNaN(tDate)) return false;
-                    
                     const diffTime = tDate - now; const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (filterTax === 'danger') return diffDays < 0;
-                    if (filterTax === 'warning') return diffDays >= 0 && diffDays <= 90;
-                    if (filterTax === 'normal') return diffDays > 90;
+                    if (filterTax === 'danger') return diffDays < 0; if (filterTax === 'warning') return diffDays >= 0 && diffDays <= 90; if (filterTax === 'normal') return diffDays > 90;
                     return true;
                 });
             }
