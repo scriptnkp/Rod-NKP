@@ -33,7 +33,7 @@ function renderAdminCarPage(container) {
         <div class="table-container hidden" id="car-table-wrapper">
             <table>
                 <thead>
-                    <tr><th>สังกัด/แผนก</th><th>ทะเบียนรถ</th><th>ยี่ห้อ/ประเภท</th><th>วันต่อภาษี/สถานะ</th><th style="text-align:center;">จัดการ</th></tr>
+                    <tr><th>สังกัด/แผนก</th><th>ทะเบียนรถ</th><th>ยี่ห้อ/ประเภท</th><th>วันต่อภาษี/สถานะ</th><th style="text-align:center; min-width: 120px;">จัดการ</th></tr>
                 </thead>
                 <tbody id="admin-table-body"></tbody>
             </table>
@@ -111,6 +111,7 @@ function filterAdminCarTable() {
                     }
                 }
             }
+            // 🔴 เพิ่มปุ่มต่อภาษีด่วน (สีเขียว) ไว้ตรงส่วนการจัดการ
             tbody.innerHTML += `
                 <tr>
                     <td><b>${car.sangkat}</b><br><span style="font-size:12px; color:var(--text-light);">${car.phanek}</span></td>
@@ -118,8 +119,9 @@ function filterAdminCarTable() {
                     <td>${car.brand}<br><span style="font-size:12px; color:var(--text-light);">${car.type}</span></td>
                     <td><span style="font-weight:500;">${formattedTaxDate}</span>${taxBadge}</td>
                     <td style="text-align:center;">
-                        <button class="btn btn-warning btn-sm" style="padding: 6px 10px;" onclick="openCarModal('edit', '${car.id}')"><i class="fas fa-edit"></i></button> 
-                        <button class="btn btn-danger btn-sm" style="padding: 6px 10px;" onclick="deleteCar('${car.id}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-success btn-sm" style="padding: 6px 10px; margin-bottom: 4px;" onclick="renewCarTax('${car.id}')" title="ต่อภาษีด่วน"><i class="fas fa-calendar-plus"></i></button> 
+                        <button class="btn btn-warning btn-sm" style="padding: 6px 10px; margin-bottom: 4px;" onclick="openCarModal('edit', '${car.id}')" title="แก้ไขข้อมูล"><i class="fas fa-edit"></i></button> 
+                        <button class="btn btn-danger btn-sm" style="padding: 6px 10px; margin-bottom: 4px;" onclick="deleteCar('${car.id}')" title="ลบรถ"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`; 
         });
@@ -128,6 +130,82 @@ function filterAdminCarTable() {
     document.getElementById('admin-stat-normal').innerText = statNormal; 
     document.getElementById('admin-stat-warning').innerText = statWarning; 
     document.getElementById('admin-stat-danger').innerText = statDanger;
+}
+
+// 🔴 ฟังก์ชันใหม่ สำหรับแสดงหน้าต่างต่อภาษีด่วน
+function renewCarTax(id) {
+    const car = currentCarsList.find(c => c.id === id);
+    if (!car) return;
+
+    // ดึงค่าวันที่เดิมมาตั้งเป็นค่าเริ่มต้น
+    let defaultDate = '';
+    if (car.taxDate) {
+        let dt = new Date(car.taxDate);
+        if (isNaN(dt)) {
+            const parts = car.taxDate.toString().split('/');
+            if (parts.length === 3) dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+        if (!isNaN(dt)) {
+            defaultDate = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+        }
+    }
+
+    Swal.fire({
+        title: `อัปเดตภาษีรถ <span style="color:var(--primary);">${car.plate}</span>`,
+        html: `กรุณาเลือก <b>วันครบกำหนดต่อภาษีรอบใหม่</b><br><br><input type="date" id="renew-tax-date" class="swal2-input" value="${defaultDate}" style="max-width: 90%;">`,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-save"></i> บันทึกข้อมูล',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#10B981',
+        preConfirm: () => {
+            const newDate = document.getElementById('renew-tax-date').value;
+            if (!newDate) {
+                Swal.showValidationMessage('กรุณาเลือกวันที่ก่อนบันทึก');
+            }
+            return newDate;
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const newTaxDate = result.value;
+            
+            // เรียกใช้ API แบบเดียวกับการแก้ไขรถ (edit_car) แต่เปลี่ยนแค่วันที่
+            const payload = {
+                action: 'edit_car',
+                id: car.id,
+                sangkat: car.sangkat,
+                phanek: car.phanek,
+                plate: car.plate,
+                brand: car.brand,
+                type: car.type,
+                taxDate: newTaxDate
+            };
+
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                const res = await apiCall(payload);
+                if (res.status === 'success') {
+                    Swal.fire({
+                        title: 'สำเร็จ!',
+                        text: 'อัปเดตวันต่อภาษีเรียบร้อยแล้ว',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    await fetchCarsData(); // โหลดข้อมูลรถใหม่
+                    filterAdminCarTable(); // รีเฟรชตาราง
+                } else {
+                    Swal.fire('ผิดพลาด', res.message, 'error');
+                }
+            } catch (e) {
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            }
+        }
+    });
 }
 
 function openCarModal(mode, id = null) { 
