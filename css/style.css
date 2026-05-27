@@ -119,18 +119,24 @@ td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border); ver
 }
 
 /* =========================================
-   แก้ไขปัญหา Dropdown กดไม่ติดใน LINE (Android)
+   แก้ไขปัญหา Dropdown LINE Android (ขั้นเด็ดขาด)
    ========================================= */
-select, .input-group select {
-    -webkit-appearance: menulist-button !important; /* บังคับให้เป็นปุ่มเลือกพื้นฐานของมือถือ */
-    appearance: menulist-button !important;
-    cursor: pointer !important;
-    position: relative;
-    z-index: 50; /* ดันให้อยู่หน้าสุดป้องกันการโดนบัง */
-    touch-action: manipulation; /* อนุญาตให้กดผ่านหน้าจอสัมผัสได้ปกติ */
+
+/* 1. ยกเลิกการซ่อนขอบจอ (ตัวการหลักที่ทำให้ Dropdown บั๊กใน LINE) */
+html, body {
+    overflow-x: visible !important; 
 }
 
-/* ป้องกันปัญหาจอเลื่อน/ซ้อนทับกันใน LINE Android */
-html, body {
-    overscroll-behavior-y: none;
+/* 2. บังคับให้ Dropdown แยกเลเยอร์และปิดแอนิเมชันที่ไปกวนระบบสัมผัส */
+select, .input-group select {
+    transition: none !important; 
+    transform: translateZ(0) !important; 
+    -webkit-tap-highlight-color: transparent !important;
+    position: relative;
+    z-index: 9999 !important;
+}
+
+/* 3. ทำให้กล่องฟอร์มไม่ตัดเนื้อหา (ตัดปัญหาโดนบัง) */
+.form-box {
+    overflow: visible !important;
 }
