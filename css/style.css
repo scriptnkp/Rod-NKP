@@ -117,3 +117,20 @@ td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border); ver
     .print-sign-box { width: 30%; }
     .print-sign-line { border-bottom: 1px dotted #000; margin-bottom: 5px; height: 30px;}
 }
+
+/* =========================================
+   แก้ไขปัญหา Dropdown กดไม่ติดใน LINE (Android)
+   ========================================= */
+select, .input-group select {
+    -webkit-appearance: menulist-button !important; /* บังคับให้เป็นปุ่มเลือกพื้นฐานของมือถือ */
+    appearance: menulist-button !important;
+    cursor: pointer !important;
+    position: relative;
+    z-index: 50; /* ดันให้อยู่หน้าสุดป้องกันการโดนบัง */
+    touch-action: manipulation; /* อนุญาตให้กดผ่านหน้าจอสัมผัสได้ปกติ */
+}
+
+/* ป้องกันปัญหาจอเลื่อน/ซ้อนทับกันใน LINE Android */
+html, body {
+    overscroll-behavior-y: none;
+}
