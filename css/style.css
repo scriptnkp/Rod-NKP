@@ -10,7 +10,10 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Prompt', sans-serif; }
-body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+/* 🔴 แก้ไข overflow-x เป็น visible เพื่อแก้บั๊กใน LINE Android */
+body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: visible !important; }
+html { overflow-x: visible !important; overscroll-behavior-y: none; }
 
 .btn { padding: 10px 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .btn:hover { background: var(--primary-hover); }
@@ -29,7 +32,8 @@ body { background-color: var(--bg); color: var(--text); display: flex; min-heigh
 .flex-row { display: flex; gap: 15px; flex-wrap: wrap; }
 .flex-col { flex: 1; min-width: 150px; }
 
-.form-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%; margin-top: 20px;}
+/* 🔴 แก้ไข overflow เพื่อให้กล่องไม่ตัด Dropdown */
+.form-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; overflow: visible !important;}
 
 .check-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
 .check-item:last-child { border-bottom: none; }
@@ -77,13 +81,17 @@ td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border); ver
 #login-screen { width: 100%; display: flex; justify-content: center; align-items: center; }
 .login-card { background: var(--surface); padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border); }
 #dashboard-screen { display: none; width: 100%; flex-direction: column; }
-.navbar { background: var(--surface); height: 65px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10; border-bottom: 1px solid var(--border); }
+
+/* 🔴 อัปเกรด z-index ของ Navbar ให้สูงกว่า Dropdown */
+.navbar { background: var(--surface); height: 65px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 50 !important; border-bottom: 1px solid var(--border); }
 .hamburger { font-size: 20px; cursor: pointer; color: var(--text-light); padding: 8px; }
 .nav-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--primary); font-weight: 600; font-size: 18px; transition: 0.2s; }
 .nav-brand:hover { color: var(--primary-hover); opacity: 0.8; }
 @media (max-width: 500px) { .nav-brand-text { display: none; } }
 .user-profile { font-size: 15px; font-weight: 600; color: var(--text); background: #F3F4F6; padding: 6px 12px; border-radius: 20px; }
-.sidebar { position: fixed; top: 65px; left: -260px; width: 260px; height: calc(100vh - 65px); background: var(--surface); border-right: 1px solid var(--border); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px 0; z-index: 9; overflow-y: auto;}
+
+/* 🔴 อัปเกรด z-index ของ Sidebar ให้สูงกว่า Dropdown */
+.sidebar { position: fixed; top: 65px; left: -260px; width: 260px; height: calc(100vh - 65px); background: var(--surface); border-right: 1px solid var(--border); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px 0; z-index: 40 !important; overflow-y: auto;}
 .sidebar.active { left: 0; }
 .menu-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: var(--text-light); text-decoration: none; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 15px; }
 .menu-item:hover, .menu-item.active { background: #EEF2FF; color: var(--primary); border-right: 3px solid var(--primary); }
@@ -94,7 +102,7 @@ td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border); ver
 .hidden { display: none !important; }
 
 /* Modals */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(2px); overflow-y:auto; padding: 20px;}
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 100 !important; backdrop-filter: blur(2px); overflow-y:auto; padding: 20px;}
 .modal-content { background: var(--surface); width: 100%; max-width: 600px; border-radius: 16px; padding: 24px; animation: slideUp 0.3s ease-out; margin: auto; }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-light);}
@@ -119,24 +127,17 @@ td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border); ver
 }
 
 /* =========================================
-   แก้ไขปัญหา Dropdown LINE Android (ขั้นเด็ดขาด)
+   🔴 แก้ไขปัญหา Dropdown LINE Android + ป้องกันการซ้อนทับเมนู
    ========================================= */
-
-/* 1. ยกเลิกการซ่อนขอบจอ (ตัวการหลักที่ทำให้ Dropdown บั๊กใน LINE) */
-html, body {
-    overflow-x: visible !important; 
-}
-
-/* 2. บังคับให้ Dropdown แยกเลเยอร์และปิดแอนิเมชันที่ไปกวนระบบสัมผัส */
 select, .input-group select {
+    -webkit-appearance: menulist-button !important; 
+    appearance: menulist-button !important;
+    cursor: pointer !important;
+    touch-action: manipulation;
     transition: none !important; 
     transform: translateZ(0) !important; 
     -webkit-tap-highlight-color: transparent !important;
     position: relative;
-    z-index: 9999 !important;
-}
-
-/* 3. ทำให้กล่องฟอร์มไม่ตัดเนื้อหา (ตัดปัญหาโดนบัง) */
-.form-box {
-    overflow: visible !important;
+    /* ตั้งระดับให้อยู่ล่าง Navbar (50) และ Sidebar (40) แต่สามารถกดใน LINE ได้ */
+    z-index: 5 !important; 
 }
