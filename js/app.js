@@ -1,6 +1,17 @@
 // ไฟล์: js/app.js
 // บทบาท: ตัวควบคุมระบบหลัก (Core Engine) + ยืนยันตัวตน + จัดการ Routing และฟังก์ชันเสริม (Utils)
 
+// --- โค้ดตรวจจับการเปิดผ่านแอป LINE ---
+if (navigator.userAgent.indexOf("Line") > -1) {
+    Swal.fire({
+        title: '⚠️ ตรวจพบแอป LINE',
+        html: 'การใช้งานผ่านแอป LINE อาจทำให้กดเมนูไม่ติดบางส่วน<br><br>แนะนำให้กด <b>จุด 3 จุด</b> ที่มุมจอ แล้วเลือก<br><b style="color:var(--success);">"เปิดในเบราว์เซอร์อื่น (Open in browser)"</b><br>เพื่อความลื่นไหลครับ!',
+        icon: 'warning',
+        confirmButtonText: 'รับทราบ',
+        confirmButtonColor: '#10B981'
+    });
+}
+
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxmYjemmmUSQWvR-RiRRwOtFpCxjIzhl8RSqiE29uu_qDHHr6i6s2PyU-czJ7ODy1pIlg/exec'; 
 
 // --- ประกาศตัวแปร Global สำหรับแชร์ใช้งานทุกหน้าจอ ---
