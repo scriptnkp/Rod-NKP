@@ -25,8 +25,8 @@ function renderInspectionPage(container) {
                 <textarea id="ins-note" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
             </div>
             <div class="input-group">
-                <label>อัปโหลดภาพจุดชำรุด <span style="color:red;">*</span></label>
-                <input type="file" id="ins-image" accept="image/*">
+                <label>อัปโหลดภาพจุดชำรุด <span style="color:red;"></span></label>
+                <input type="file" id="ins-image" accept="image/">
             </div>
             <button class="btn btn-success" style="width:100%; padding:14px; margin-top:15px;" id="submitInsBtn" onclick="submitInspection()"><i class="fas fa-save"></i> บันทึกตรวจสภาพ</button>
         </div>`; 
