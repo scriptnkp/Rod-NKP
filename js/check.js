@@ -25,8 +25,8 @@ function renderInspectionPage(container) {
                 <textarea id="ins-note" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
             </div>
             <div class="input-group">
-                <label>อัปโหลดภาพจุดชำรุด <span style="color:red;"></span></label>
-                <input type="file" id="ins-image" accept="image/">
+                <label>อัปโหลดภาพจุดชำรุด (ถ้ามี)</label>
+                <input type="file" id="ins-image" accept="image/*">
             </div>
             <button class="btn btn-success" style="width:100%; padding:14px; margin-top:15px;" id="submitInsBtn" onclick="submitInspection()"><i class="fas fa-save"></i> บันทึกตรวจสภาพ</button>
         </div>`; 
@@ -62,12 +62,17 @@ async function submitInspection() {
     if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); 
     
     const imgFile = document.getElementById('ins-image').files[0]; 
-    if(!imgFile) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลดภาพจุดชำรุดด้วยครับ', 'warning'); 
     
+    // 🔴 แก้ไขจุดที่ 2: ปลดล็อกเงื่อนไขตรวจสอบรูปภาพออก เพื่อไม่ให้ระบบแจ้งเตือนบังคับอัปโหลด
     document.getElementById('submitInsBtn').disabled = true; 
     document.getElementById('submitInsBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; 
     
-    let base64String = await compressImage(imgFile); 
+    // ตรวจสอบว่าถ้าผู้ใช้มีการเลือกไฟล์รูปภาพ ค่อยประมวลผลบีบอัดไฟล์ ถ้าไม่มีให้ส่งเป็นค่าว่างเปล่า
+    let base64String = ''; 
+    if (imgFile) {
+        base64String = await compressImage(imgFile); 
+    }
+    
     const user = JSON.parse(localStorage.getItem('user_session')); 
     
     const payload = { 
