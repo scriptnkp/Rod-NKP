@@ -79,6 +79,7 @@ async function loadPage(page, element = null) {
     else if(page === 'report') { renderReportPage(contentDiv); } 
     else if(page === 'car-settings') { renderAdminCarPage(contentDiv); }
     else if(page === 'user-settings') { renderAdminUserPage(contentDiv); }
+    else if(page === 'utility') { renderUtilityPage(contentDiv); }
 }
 
 // --- ระบบเข้าสู่ระบบ & ควบคุมสิทธิ์ (Authentication & Profile) ---

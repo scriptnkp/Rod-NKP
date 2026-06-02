@@ -62,8 +62,6 @@ function showCarStatusDetails(status) {
 // ไฟล์: js/dashboard.js (อัปเดตส่วนปุ่มคืนรถ)
 // ==========================================
 
-// ... (ฟังก์ชัน applySwalFilter และ showCarStatusDetails คงไว้เหมือนเดิม) ...
-
 async function renderMainDashboard(container) {
     const user = JSON.parse(localStorage.getItem('user_session')); 
     container.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br>กำลังโหลดภาพรวม...</div>`;
@@ -111,11 +109,15 @@ async function renderMainDashboard(container) {
             <div class="stat-card clickable warning" onclick="showCarStatusDetails('inuse')"><div class="stat-icon" style="background: var(--warning);"><i class="fas fa-route"></i></div><div class="stat-info"><h3>${inUse}</h3><p>กำลังใช้งาน (คลิกดู)</p></div></div>
         </div>
         <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text);"><i class="fas fa-bolt"></i> เมนูด่วน</h3>
+        
         <div class="quick-actions">
             <div class="action-card" onclick="loadPage('use', document.querySelectorAll('.menu-item')[2])"><i class="fas fa-key"></i><span>ขอใช้งานรถ</span></div>
             <div class="action-card" onclick="loadPage('check', document.querySelectorAll('.menu-item')[1])"><i class="fas fa-clipboard-check" style="color: var(--success);"></i><span>เช็คสภาพ</span></div>
             <div class="action-card" onclick="loadPage('fuel', document.querySelectorAll('.menu-item')[4])"><i class="fas fa-gas-pump" style="color: var(--danger);"></i><span>เติมน้ำมัน</span></div>
+            
+            <div class="action-card" onclick="loadPage('utility', document.querySelectorAll('.menu-item')[6] || null)"><i class="fas fa-briefcase" style="color: #8B5CF6;"></i><span>อรรถประโยชน์</span></div>
         </div>
+
         <div class="form-box" style="margin-top: 0; padding: 20px;">${myTaskHtml}</div>
     `;
 }
