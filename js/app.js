@@ -1,233 +1,259 @@
-// ไฟล์: js/app.js
-// บทบาท: ตัวควบคุมระบบหลัก (Core Engine) + ยืนยันตัวตน + จัดการ Routing และฟังก์ชันเสริม (Utils)
+const API_URL = 'https://script.google.com/macros/s/AKfycbxzaxiO9VErx1JeRK1RxFspKNYAKsljlyx5de4MPiAO72JP7GIh7Mr2QGJ5SzwWcABE/exec';
 
-// --- โค้ดตรวจจับการเปิดผ่านแอป LINE ---
-if (navigator.userAgent.indexOf("Line") > -1) {
-    Swal.fire({
-        title: '⚠️ ตรวจพบแอป LINE',
-        html: 'การใช้งานผ่านแอป LINE อาจทำให้กดเมนูไม่ติดบางส่วน<br><br>แนะนำให้กด <b>จุด 3 จุด</b> ที่มุมจอ แล้วเลือก<br><b style="color:var(--success);">"เปิดในเบราว์เซอร์อื่น (Open in browser)"</b><br>เพื่อความลื่นไหลครับ!',
-        icon: 'warning',
-        confirmButtonText: 'รับทราบ',
-        confirmButtonColor: '#10B981'
-    });
-}
+let materialsData = [];
+let historyData = []; 
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxmYjemmmUSQWvR-RiRRwOtFpCxjIzhl8RSqiE29uu_qDHHr6i6s2PyU-czJ7ODy1pIlg/exec'; 
+document.addEventListener("DOMContentLoaded", () => {
+    loadCSV('ราคามาตราฐาน.csv'); 
+    resetForm();
+});
 
-// --- ประกาศตัวแปร Global สำหรับแชร์ใช้งานทุกหน้าจอ ---
-let currentCarsList = []; 
-let currentFuelsList = []; 
-let currentUsersList = []; 
-let activeUsesList = [];
-let currentFilteredFuels = []; 
-let currentFuelPage = 1; 
-const FUEL_ITEMS_PER_PAGE = 10;
-
-// ส่วนนี้ทำงานเมื่อเปิดหน้าเว็บขึ้นมาแล้วตรวจพบว่าเคย Login ค้างไว้แล้ว
-window.onload = async function() { 
-    document.getElementById('login-loader').style.display = 'none';
-    const savedUser = localStorage.getItem('user_session'); 
-    if(savedUser) { 
-        renderDashboard(JSON.parse(savedUser)); 
-        
-        // 🔴 1. แสดง Popup กำลังโหลดข้อมูลทันที
-        Swal.fire({
-            title: 'กำลังเชื่อมต่อเซิร์ฟเวอร์',
-            text: 'กรุณารอสักครู่ ระบบกำลังดึงข้อมูลพื้นฐาน...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading(); // เปิดแอนิเมชันหมุนๆ ของ SweetAlert2
-            }
-        });
-        
-        await fetchCarsData(); // รอโหลดข้อมูลรถยนต์
-        await loadPage('dashboard', document.querySelector('.menu-item')); // รอเตรียมหน้า Dashboard
-        
-        // 🔴 2. ปิด Popup ทันทีเมื่อโหลดทุกอย่างเสร็จสิ้น
-        Swal.close(); 
-    } 
-}
-
-// --- ฟังก์ชันหลักสำหรับเรียกเชื่อมต่อ Google Apps Script API Backend ---
-async function apiCall(payload) { 
-    try { 
-        const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-        return await response.json(); 
-    } catch(e) { 
-        console.error("API Call Error: ", e); 
-        throw e; 
-    } 
-}
-
-// --- ระบบสลับหน้าเว็บเพจ (Client-Side Router) ---
-async function loadPage(page, element = null) {
-    if(element) { 
-        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active')); 
-        element.classList.add('active'); 
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if(tab === 'form') {
+        document.getElementById('formSection').style.display = 'block';
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+    } else {
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        fetchDashboardData(); 
     }
-    // ซ่อนแถบ Sidebar อัตโนมัติเมื่อกดในอุปกรณ์หน้าจอเล็ก (Mobile)
-    if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
-    
-    const contentDiv = document.getElementById('page-content');
-    
-    // คัดกรองและส่งต่อไปยังฟังก์ชันแสดงผลในแต่ละโมดูลย่อย
-    if(page === 'dashboard') { await renderMainDashboard(contentDiv); } 
-    else if(page === 'check') { renderInspectionPage(contentDiv); }
-    else if(page === 'use') { renderUsePage(contentDiv); }
-    else if(page === 'return') { renderReturnPage(contentDiv); }
-    else if(page === 'fuel') { renderFuelDashboard(contentDiv); }
-    else if(page === 'report') { renderReportPage(contentDiv); } 
-    else if(page === 'car-settings') { renderAdminCarPage(contentDiv); }
-    else if(page === 'user-settings') { renderAdminUserPage(contentDiv); }
-    else if(page === 'utility') { renderUtilityPage(contentDiv); }
 }
 
-// --- ระบบเข้าสู่ระบบ & ควบคุมสิทธิ์ (Authentication & Profile) ---
-async function handleLogin() { 
-    const empId = document.getElementById('empId').value; 
-    if(!empId) return Swal.fire('แจ้งเตือน', 'กรุณากรอกรหัสพนักงาน', 'warning'); 
-    
-    document.getElementById('loginBtn').disabled = true; 
-    
-    // 🔴 1. แสดง Popup ทันทีที่กดปุ่มเข้าสู่ระบบ
-    Swal.fire({
-        title: 'กำลังเข้าสู่ระบบ',
-        text: 'กรุณารอสักครู่ ระบบกำลังตรวจสอบข้อมูล...',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-    
-    try { 
-        // สั่งเชื่อมต่อ API เพื่อตรวจสอบรหัสพนักงาน
-        const result = await apiCall({ action: 'login', empId: empId }); 
-        
-        if(result.status === 'success') { 
-            localStorage.setItem('user_session', JSON.stringify(result.data)); 
-            renderDashboard(result.data); 
-            
-            // 🔴 2. เปลี่ยนข้อความใน Popup เมื่อ Login ผ่าน (ไม่ต้องปิดเปิดใหม่)
-            Swal.update({
-                title: 'เข้าสู่ระบบสำเร็จ!',
-                text: 'กำลังดาวน์โหลดข้อมูลระบบรถยนต์ กรุณารอสักครู่...'
+function loadCSV(url) {
+    showLoader('กำลังโหลดฐานข้อมูลราคา...');
+    Papa.parse(url, {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(results) {
+            materialsData = results.data;
+            const datalist = document.getElementById('materialsList');
+            materialsData.forEach(item => {
+                const option = document.createElement('option');
+                option.value = `${item['รหัสพัสดุ']} - ${item['ชื่อพัสดุ']}`;
+                datalist.appendChild(option);
             });
-            
-            await fetchCarsData(); // รอโหลดข้อมูลรถยนต์
-            await loadPage('dashboard'); // รอเตรียมหน้า Dashboard
-            
-            // 🔴 3. ปิด Popup เมื่อพร้อมแสดงผล
-            Swal.close(); 
-        } else { 
-            // กรณีรหัสพนักงานผิด จะแสดง Popup แจ้งเตือน Error
-            Swal.fire('เกิดข้อผิดพลาด', result.message, 'error'); 
-        } 
-    } catch (error) { 
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', 'error'); 
-    } finally { 
-        document.getElementById('loginBtn').disabled = false; 
-    } 
-}
-
-function renderDashboard(userData) { 
-    document.getElementById('login-screen').style.display = 'none'; 
-    document.getElementById('dashboard-screen').style.display = 'flex'; 
-    document.getElementById('user-display-name').innerHTML = `<i class="fas fa-user-circle"></i> ${userData.name} (${userData.role})`; 
-    
-    // เปิดการแสดงผลเมนูผู้ดูแลระบบ (Admin)
-    if(userData.role === 'Admin') { 
-        document.getElementById('menu-admin-car').classList.remove('hidden'); 
-        document.getElementById('menu-admin-user').classList.remove('hidden'); 
-    } 
-}
-
-function logout() { 
-    localStorage.removeItem('user_session'); 
-    document.getElementById('dashboard-screen').style.display = 'none'; 
-    document.getElementById('login-screen').style.display = 'flex'; 
-    document.getElementById('login-loader').style.display = 'none'; 
-    document.getElementById('empId').value = ''; 
-}
-
-function toggleMenu() { 
-    document.getElementById('sidebar').classList.toggle('active'); 
-    if(window.innerWidth > 768) document.getElementById('main-content').classList.toggle('shift'); 
-}
-
-// --- ฟังก์ชันดึงข้อมูลพื้นฐานเก็บไว้ใน Cache ---
-async function fetchCarsData() { try { const result = await apiCall({ action: 'get_cars' }); if(result.status === 'success') { currentCarsList = result.data; updateSidebarAlerts(); } } catch(e) {} }
-async function fetchUsersData() { try { const result = await apiCall({ action: 'get_users' }); if(result.status === 'success') currentUsersList = result.data; } catch(e) {} }
-async function fetchFuelsData() { try { const result = await apiCall({ action: 'get_fuels' }); if(result.status === 'success') currentFuelsList = result.data; } catch(e) {} }
-
-// --- ฟังก์ชันอำนวยความสะดวกทั่วไป (Utility Functions) ---
-function formatDisplayDate(dateStr) { 
-    if(!dateStr) return ''; 
-    if(dateStr.includes('T') && dateStr.includes('Z')) { 
-        const d = new Date(dateStr); 
-        const pad = (n) => n.toString().padStart(2, '0'); 
-        return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; 
-    } 
-    return dateStr; 
-}
-
-function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) { 
-    return new Promise((resolve, reject) => { 
-        if (!file) return resolve(""); 
-        const reader = new FileReader(); 
-        reader.readAsDataURL(file); 
-        reader.onload = (event) => { 
-            const img = new Image(); 
-            img.src = event.target.result; 
-            img.onload = () => { 
-                let width = img.width; let height = img.height; 
-                if (width > maxWidth || height > maxHeight) { 
-                    if (width > height) { height = Math.round((height *= maxWidth / width)); width = maxWidth; } 
-                    else { width = Math.round((width *= maxHeight / height)); height = maxHeight; } 
-                } 
-                const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; 
-                const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); 
-                resolve(canvas.toDataURL('image/jpeg', quality)); 
-            }; 
-            img.onerror = (e) => reject(e); 
-        }; 
-        reader.onerror = (e) => reject(e); 
-    }); 
-}
-
-function ThaiBaht(Number) {
-    let txtNumArr = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า', 'สิบ'];
-    let txtDigitArr = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
-    let BahtText = '';
-    if (isNaN(Number)) return 'ข้อมูลไม่ถูกต้อง';
-    let amount = parseFloat(Number).toFixed(2) + '';
-    let parts = amount.split('.'); let number = parts[0]; let decimal = parts[1];
-
-    function convert(str) {
-        let text = '';
-        for (let i = 0; i < str.length; i++) {
-            let n = parseInt(str.charAt(i)); let place = str.length - i - 1;
-            if (n !== 0) {
-                if (n === 1 && place === 0 && str.length > 1) { text += 'เอ็ด'; } 
-                else if (n === 2 && place === 1) { text += 'ยี่สิบ'; } 
-                else if (n === 1 && place === 1) { text += 'สิบ'; } 
-                else { text += txtNumArr[n] + txtDigitArr[place % 6]; if (place >= 6 && place % 6 === 0) text += 'ล้าน'; }
-            } else if (place >= 6 && place % 6 === 0 && text.length > 0 && !text.endsWith('ล้าน')) { text += 'ล้าน'; }
-        } return text;
-    }
-    BahtText = convert(number); if (BahtText === '') BahtText = 'ศูนย์'; BahtText += 'บาท';
-    if (decimal === '00') { BahtText += 'ถ้วน'; } else { BahtText += convert(decimal) + 'สตางค์'; }
-    return BahtText;
-}
-
-function updateSidebarAlerts() {
-    let alertCount = 0; const now = new Date();
-    currentCarsList.forEach(car => {
-        if (car.taxDate) {
-            let tDate = new Date(car.taxDate); 
-            if (isNaN(tDate)) { const parts = car.taxDate.toString().split('/'); if (parts.length === 3) tDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); }
-            if (!isNaN(tDate)) { const diffDays = Math.ceil((tDate - now) / (1000 * 60 * 60 * 24)); if (diffDays <= 90) alertCount++; }
+            hideLoader();
         }
     });
-    const alertIcon = document.getElementById('sidebar-car-alert');
-    if (alertIcon) alertIcon.style.display = alertCount > 0 ? 'inline-block' : 'none';
+}
+
+function addItemRow(itemName = '', qty = 1) {
+    const container = document.getElementById('itemsContainer');
+    const rowId = Date.now() + Math.floor(Math.random() * 1000);
+    const html = `
+        <div class="item-row" id="row-${rowId}">
+            <input type="text" class="item-select" list="materialsList" placeholder="พิมพ์ค้นหา..." value="${itemName}" onchange="calculateTotal()" required>
+            <input type="number" class="item-qty" placeholder="จำนวน" min="1" value="${qty}" onchange="calculateTotal()" required>
+            <button type="button" class="btn-delete" onclick="removeRow(${rowId})">ลบ</button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+    calculateTotal();
+}
+
+function removeRow(rowId) {
+    document.getElementById(`row-${rowId}`).remove();
+    calculateTotal();
+}
+
+function resetForm() {
+    document.getElementById('serviceForm').reset();
+    document.getElementById('editRowIndex').value = '';
+    document.getElementById('editTimestamp').value = '';
+    document.getElementById('submitBtn').innerText = 'บันทึกข้อมูลเข้าระบบ';
+    document.getElementById('serviceDate').valueAsDate = new Date();
+    document.getElementById('itemsContainer').innerHTML = '';
+    addItemRow();
+    calculateTotal();
+}
+
+function calculateTotal() {
+    const start = document.getElementById('timeStart').value;
+    const end = document.getElementById('timeEnd').value;
+    let serviceFee = 0;
+    
+    if (start && end) {
+        const startTime = new Date(`2000-01-01T${start}`);
+        let endTime = new Date(`2000-01-01T${end}`);
+        if (endTime < startTime) endTime.setDate(endTime.getDate() + 1);
+        
+        let diffMins = (endTime - startTime) / 60000;
+        let hours = Math.floor(diffMins / 60);
+        let mins = diffMins % 60;
+        document.getElementById('totalHoursTxt').innerText = `${hours} ชม. ${mins} นาที`;
+
+        if (diffMins > 0) {
+            serviceFee = 285;
+            if (diffMins > 30) serviceFee += Math.ceil((diffMins - 30) / 30) * 285;
+        }
+    }
+
+    let materialsFee = 0;
+    document.querySelectorAll('.item-row').forEach(row => {
+        const itemVal = row.querySelector('.item-select').value;
+        const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+        if (itemVal) {
+            const itemCode = itemVal.split(' - ')[0];
+            const matchedItem = materialsData.find(m => m['รหัสพัสดุ'] === itemCode);
+            if (matchedItem) {
+                let price = parseFloat(matchedItem['ราคามาตรฐาน']);
+                if (isNaN(price) || price === 0) price = parseFloat(matchedItem['Std_อีสาน']);
+                if (!isNaN(price)) materialsFee += (price * 1.4) * qty;
+            }
+        }
+    });
+
+    const switchFee = 570;
+    const total = switchFee + serviceFee + materialsFee;
+
+    document.getElementById('serviceFeeTxt').innerText = serviceFee.toLocaleString();
+    document.getElementById('sumService').innerText = serviceFee.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' บาท';
+    document.getElementById('sumMaterials').innerText = materialsFee.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' บาท';
+    document.getElementById('sumTotal').innerText = total.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' บาท';
+}
+
+document.getElementById('serviceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const items = [];
+    document.querySelectorAll('.item-row').forEach(row => {
+        items.push({ itemName: row.querySelector('.item-select').value, qty: row.querySelector('.item-qty').value });
+    });
+
+    const editRowIndex = document.getElementById('editRowIndex').value;
+
+    const payload = {
+        action: editRowIndex ? 'edit' : 'create',
+        rowIndex: editRowIndex,
+        timestamp: document.getElementById('editTimestamp').value, 
+        serviceDate: document.getElementById('serviceDate').value,
+        timeStart: document.getElementById('timeStart').value,
+        timeEnd: document.getElementById('timeEnd').value,
+        totalHours: document.getElementById('totalHoursTxt').innerText,
+        staffName: document.getElementById('staffName').value,
+        customerName: document.getElementById('customerName').value,
+        phone: document.getElementById('phone').value,
+        meterNo: document.getElementById('meterNo').value,
+        br1Info: document.getElementById('br1Info').value,
+        items: items,
+        switchFee: 570,
+        serviceFee: parseFloat(document.getElementById('sumService').innerText.replace(/,/g, '')),
+        materialsFee: parseFloat(document.getElementById('sumMaterials').innerText.replace(/,/g, '')),
+        totalBr1: parseFloat(document.getElementById('sumTotal').innerText.replace(/,/g, '')),
+        totalMt1: parseFloat(document.getElementById('sumTotal').innerText.replace(/,/g, ''))
+    };
+
+    showLoader(editRowIndex ? 'กำลังอัปเดตข้อมูล...' : 'กำลังบันทึกข้อมูล...');
+    fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+    .then(r => r.json())
+    .then(result => {
+        hideLoader();
+        if (result.status === 'success') {
+            alert(result.message);
+            resetForm();
+        } else { alert('เกิดข้อผิดพลาด: ' + result.message); }
+    })
+    .catch(e => { hideLoader(); alert('ไม่สามารถเชื่อมต่อระบบหลังบ้านได้'); });
+});
+
+function fetchDashboardData() {
+    showLoader('กำลังโหลดประวัติและสรุปผลงาน...');
+    fetch(API_URL)
+    .then(r => r.json())
+    .then(result => {
+        hideLoader();
+        if(result.status === 'success') {
+            historyData = result.data.reverse(); 
+            renderDashboard();
+            renderHistory();
+        }
+    }).catch(e => { hideLoader(); alert('โหลดข้อมูลล้มเหลว'); });
+}
+
+function renderDashboard() {
+    const summary = {};
+    historyData.forEach(row => {
+        const staff = row.StaffName || 'ไม่ระบุชื่อ';
+        if(!summary[staff]) summary[staff] = { count: 0, totalRevenue: 0 };
+        summary[staff].count += 1;
+        summary[staff].totalRevenue += parseFloat(row.TotalMT1) || 0;
+    });
+
+    let html = '';
+    for(const [staff, data] of Object.entries(summary)) {
+        html += `<tr>
+            <td><strong>${staff}</strong></td>
+            <td>${data.count}</td>
+            <td style="color:#28a745; font-weight:bold;">${data.totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+        </tr>`;
+    }
+    document.querySelector('#dashboardTable tbody').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">ยังไม่มีข้อมูล</td></tr>';
+}
+
+function renderHistory() {
+    let html = '';
+    historyData.slice(0, 20).forEach(row => {
+        const dateStr = row.ServiceDate ? new Date(row.ServiceDate).toLocaleDateString('th-TH') : '-';
+        const total = parseFloat(row.TotalMT1) || 0;
+        html += `<tr>
+            <td>${dateStr}</td>
+            <td>${row.CustomerName}</td>
+            <td>${row.StaffName}</td>
+            <td>${total.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td><button class="btn-sm" onclick="editRecord(${row.rowIndex})">✏️ แก้ไข</button></td>
+        </tr>`;
+    });
+    document.querySelector('#historyTable tbody').innerHTML = html || '<tr><td colspan="5" style="text-align:center;">ยังไม่มีประวัติ</td></tr>';
+}
+
+function editRecord(rowIndex) {
+    const record = historyData.find(r => r.rowIndex === rowIndex);
+    if(!record) return;
+
+    switchTab('form'); 
+
+    document.getElementById('editRowIndex').value = record.rowIndex;
+    document.getElementById('editTimestamp').value = record.Timestamp;
+    
+    if(record.ServiceDate) {
+        const d = new Date(record.ServiceDate);
+        document.getElementById('serviceDate').value = d.toISOString().split('T')[0];
+    }
+    
+    document.getElementById('timeStart').value = record.TimeStart;
+    document.getElementById('timeEnd').value = record.TimeEnd;
+    document.getElementById('br1Info').value = record.BR1_Info;
+    document.getElementById('customerName').value = record.CustomerName;
+    document.getElementById('phone').value = record.Phone;
+    document.getElementById('meterNo').value = record.MeterNo;
+    document.getElementById('staffName').value = record.StaffName;
+
+    document.getElementById('itemsContainer').innerHTML = ''; 
+    try {
+        const items = JSON.parse(record.ItemsJSON || '[]');
+        items.forEach(item => addItemRow(item.itemName, item.qty));
+        if(items.length === 0) addItemRow(); 
+    } catch(e) { addItemRow(); }
+
+    calculateTotal();
+    document.getElementById('submitBtn').innerText = 'อัปเดตข้อมูล (Edit)';
+    window.scrollTo(0, 0); 
+}
+
+function showLoader(text) { document.getElementById('loader').style.display = 'flex'; document.getElementById('loaderText').innerText = text; }
+function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+function triggerReportPrint(reportType) {
+    const items = [];
+    document.querySelectorAll('.item-row').forEach(row => { items.push({ itemName: row.querySelector('.item-select').value, qty: parseFloat(row.querySelector('.item-qty').value) || 1 }); });
+    const currentData = {
+        serviceDate: document.getElementById('serviceDate').value, timeStart: document.getElementById('timeStart').value,
+        timeEnd: document.getElementById('timeEnd').value, totalHours: document.getElementById('totalHoursTxt').innerText,
+        staffName: document.getElementById('staffName').value, customerName: document.getElementById('customerName').value,
+        phone: document.getElementById('phone').value, meterNo: document.getElementById('meterNo').value, br1Info: document.getElementById('br1Info').value,
+        items: items, switchFee: 570, serviceFee: parseFloat(document.getElementById('sumService').innerText.replace(/,/g, '')) || 0,
+        materialsFee: parseFloat(document.getElementById('sumMaterials').innerText.replace(/,/g, '')) || 0, totalBr1: parseFloat(document.getElementById('sumTotal').innerText.replace(/,/g, '')) || 570,
+    };
+    if (reportType === 'BR1') printBR1(currentData); else if (reportType === 'MT1') printMT1(currentData);
 }
