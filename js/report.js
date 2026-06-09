@@ -34,7 +34,8 @@ async function renderReportPage(container) {
                     <select id="rep-paytype" style="padding: 14px; font-size: 15px;">
                         <option value="all">- ทุกประเภทจ่าย -</option>
                         <option value="เครดิต">เครดิต</option>
-                        <option value="ฟรีการ์ด">ฟรีการ์ด</option>
+                        <option value="ฟลีทการ์ด">ฟลีทการ์ด</option>
+                        <option value="อัดประจุ EV">อัดประจุ EV</option>
                     </select>
                 </div>
                 <div class="input-group flex-col">
@@ -144,7 +145,6 @@ function generateReportPDF() {
         const shortMonthNames = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."]; 
         const reportMonth = `${monthNames[endD.getMonth()]} ${endD.getFullYear()+543}`;
 
-        // 🔴 เพิ่มตัวบังคับฟอนต์ (CSS) ตรงนี้
         const sarabunStyle = `<style>#print-section, #print-section * { font-family: 'Sarabun', sans-serif !important; }</style>`;
 
         if(type === '1') {
@@ -250,10 +250,14 @@ function generateReportPDF() {
                 let dText = ''; if(f.date) { let d = new Date(f.date); if(isNaN(d)) { const parts = f.date.split(' ')[0].split('/'); d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); } dText = `${d.getDate()} ${shortMonthNames[d.getMonth()]} ${d.getFullYear()+543}`; }
                 const t = parseFloat(f.totalAmount) || 0; const sub = (t * 100) / 107; const vat = (t * 7) / 107;
                 totalSub += sub; totalVat += vat; totalAll += t;
-                let costCenterArr = []; if (f.wbs) costCenterArr.push(f.wbs); if (f.network) costCenterArr.push(f.network); let costCenterStr = costCenterArr.join(' / ');
-                tableRows += `<tr><td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td><td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td><td></td><td></td><td style="text-align:center;">${f.budget || ''}</td><td style="text-align:center;">${costCenterStr}</td></tr>`;
+                
+                // 🔴 นำข้อมูลลงแต่ละช่องโดยตรง
+                tableRows += `<tr><td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${dText}</td><td style="text-align:right;">${sub.toFixed(2)}</td><td style="text-align:right;">${vat.toFixed(2)}</td><td style="text-align:right;">${t.toFixed(2)}</td><td style="text-align:center;">${f.network || ''}</td><td style="text-align:center;">${f.wbs || ''}</td><td style="text-align:center;">${f.budget || ''}</td></tr>`;
             });
-            const carTypeStr = carInfo ? carInfo.type : ''; const carDeptStr = carInfo ? `${carInfo.phanek} ${carInfo.sangkat}` : ''; const thaiBahtText = ThaiBaht(totalAll);
+            const carTypeStr = carInfo ? carInfo.type : ''; 
+            const carDeptStr = carInfo ? `${carInfo.phanek} ${carInfo.sangkat}` : ''; 
+            const thaiBahtText = ThaiBaht(totalAll);
+            const taxBadge = (carInfo && carInfo.taxType) ? `(${carInfo.taxType})` : '';
 
             printSection.innerHTML = `
                 ${sarabunStyle}
@@ -268,19 +272,26 @@ function generateReportPDF() {
                         <div style="display: flex;"><div style="width: 40px;"><b>เรื่อง</b></div><div>อนุมัติสั่งซื้อ อนุมัติจ่ายเงินค่าน้ำมันเชื้อเพลิง โดยวิธีเฉพาะเจาะจง ด้วยการใช้บัตรเครดิตน้ำมัน และรายงานผลการตรวจรับ</div></div>
                         <div style="display: flex;"><div style="width: 40px;"><b>เรียน</b></div><div>${customDear}</div></div>
                     </div>
-                    <p style="font-size:14px; text-indent: 40px; margin-bottom:10px; line-height: 1.6; text-align: justify;">ตามความเห็นชอบและอนุมัติรายงานขอซื้อขอจ้างน้ำมันเชื้อเพลิง มีความประสงค์จัดซื้อน้ำมันเชื้อเพลิง สำหรับรถยนต์ทะเบียน <b>${plate}</b> ประเภท <b>${carTypeStr}</b> ประจำ <b>${carDeptStr}</b> ประจำเดือน <b>${reportMonth}</b> เพื่อใช้ในการปฏิบัติงาน จากสถานีบริการน้ำมันภายใต้การให้บริการ โดยบัตรเครดิตน้ำมันจากธนาคารกรุงไทย จำกัด (มหาชน) สาขานครพนม มีรายละเอียดดังนี้</p>
+                    <p style="font-size:14px; text-indent: 40px; margin-bottom:10px; line-height: 1.6; text-align: justify;">ตามความเห็นชอบและอนุมัติรายงานขอซื้อขอจ้างน้ำมันเชื้อเพลิง มีความประสงค์จัดซื้อน้ำมันเชื้อเพลิง สำหรับรถยนต์ทะเบียน <b>${plate} ${taxBadge}</b> ประเภท <b>${carTypeStr}</b> ประจำ <b>${carDeptStr}</b> ประจำเดือน <b>${reportMonth}</b> เพื่อใช้ในการปฏิบัติงาน จากสถานีบริการน้ำมันภายใต้การให้บริการ โดยบัตรเครดิตน้ำมันจากธนาคารกรุงไทย จำกัด (มหาชน) สาขานครพนม มีรายละเอียดดังนี้</p>
+                    
                     <table class="print-table" style="margin-bottom: 0; border-bottom: none;">
                         <thead>
                             <tr>
-                                <th rowspan="2" style="width: 5%;">ลำดับ</th><th rowspan="2" style="width: 15%;">วันที่</th><th rowspan="2" style="width: 12%;">ค่าน้ำมัน<br>(ก่อน VAT)</th><th rowspan="2" style="width: 12%;">ภาษีมูลค่าเพิ่ม</th><th rowspan="2" style="width: 12%;">รวมเป็นเงิน<br>(รวมภาษี)</th><th colspan="2" style="width: 10%;">เครดิตภาษี</th><th rowspan="2" style="width: 10%;">งบ</th><th rowspan="2" style="width: 24%;">ศูนย์ต้นทุน/WBS/โครงข่าย</th>
+                                <th style="width: 5%;">ลำดับ</th>
+                                <th style="width: 15%;">วันที่</th>
+                                <th style="width: 12%;">ค่าน้ำมัน<br>(ก่อน VAT)</th>
+                                <th style="width: 12%;">ภาษีมูลค่าเพิ่ม</th>
+                                <th style="width: 12%;">รวมเป็นเงิน<br>(รวมภาษี)</th>
+                                <th style="width: 14%;">โครงข่าย/ใบสั่ง</th>
+                                <th style="width: 10%;">WBS</th>
+                                <th style="width: 20%;">ศูนย์ต้นทุน</th>
                             </tr>
-                            <tr><th style="width: 5%;">ได้</th><th style="width: 5%;">ไม่ได้</th></tr>
                         </thead>
                         <tbody>
                             ${tableRows}
                             <tr style="font-weight:bold; background:#f9f9f9;">
                                 <td colspan="4" style="text-align:left; padding-left: 10px;">รวมเป็นเงินทั้งสิ้น ( ${thaiBahtText} )</td>
-                                <td style="text-align:right;">${totalAll.toFixed(2)}</td><td colspan="4"></td>
+                                <td style="text-align:right;">${totalAll.toFixed(2)}</td><td colspan="3"></td>
                             </tr>
                         </tbody>
                     </table>
