@@ -66,7 +66,6 @@ async function renderFuelDashboard(container) {
     const selectPhanek = document.getElementById('filter-fuel-phanek'); 
     [...new Set(currentCarsList.map(c => c.phanek))].forEach(p => selectPhanek.add(new Option(p, p))); 
     
-    // 🔴 แก้ไข Dropdown ทะเบียนให้โชว์ภาษี
     const selectPlate = document.getElementById('filter-fuel-plate'); 
     [...new Set(currentCarsList.map(c => c.plate))].forEach(pl => {
         const car = currentCarsList.find(c => c.plate === pl);
@@ -121,7 +120,6 @@ function updateFilterFuelPhanek() {
     if(s) filtered = filtered.filter(c => c.sangkat === s); 
     [...new Set(filtered.map(c => c.phanek))].forEach(p => selectP.add(new Option(p, p))); 
     
-    // 🔴 แก้ไขโชว์ภาษี
     [...new Set(filtered.map(c => c.plate))].forEach(pl => {
         const car = currentCarsList.find(c => c.plate === pl);
         const displayPlate = (car && car.taxType) ? `${pl} (${car.taxType})` : pl;
@@ -139,7 +137,6 @@ function updateFilterFuelPlate() {
     if(s) filtered = filtered.filter(c => c.sangkat === s); 
     if(p) filtered = filtered.filter(c => c.phanek === p); 
     
-    // 🔴 แก้ไขโชว์ภาษี
     [...new Set(filtered.map(c => c.plate))].forEach(pl => {
         const car = currentCarsList.find(c => c.plate === pl);
         const displayPlate = (car && car.taxType) ? `${pl} (${car.taxType})` : pl;
@@ -247,9 +244,20 @@ function renderFuelTablePage(page) {
         
         let pTypeBadge = f.payType ? `<br><span class="badge-paytype"><i class="fas fa-wallet"></i> ${f.payType}</span>` : '';
         
+        // ค้นหาข้อมูลรถเพื่อดึงภาษี
+        const carObj = currentCarsList.find(c => c.plate === f.plate);
+        const taxTypeBadge = (carObj && carObj.taxType) ? ` <span style="font-size:12px; color:var(--text-light);">(${carObj.taxType})</span>` : '';
+        const displayPlateForPrint = (carObj && carObj.taxType) ? `${f.plate} (${carObj.taxType})` : f.plate; // ทะเบียนสำหรับแสดงในหน้าพิมพ์
+
         let docHtml = ''; 
         if(f.receiptUrl) docHtml += `<a href="${f.receiptUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> บิล</a><br>`; 
-        if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> ยพ.</a>`; 
+        if(f.ypUrl) docHtml += `<a href="${f.ypUrl}" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:4px; padding: 4px 8px; width: 100%;"><i class="fas fa-image"></i> ยพ.</a><br>`; 
+        
+        // 🔴 ส่งทะเบียนรถ (displayPlateForPrint) และวันที่ (formattedDate) เข้าไปในฟังก์ชันพิมพ์
+        if (f.receiptUrl || f.ypUrl) {
+            docHtml += `<button class="btn btn-sm" style="background-color: #0EA5E9; color: white; padding: 4px 8px; width: 100%;" onclick="printFuelDocs('${f.receiptUrl || ''}', '${f.ypUrl || ''}', '${displayPlateForPrint}', '${formattedDate}')"><i class="fas fa-print"></i> พิมพ์เอกสาร</button>`;
+        }
+
         if(!docHtml) docHtml = '-';
         
         let actionHtml = `<button class="btn btn-warning btn-sm" style="padding: 6px 10px;" onclick="openFuelModal('edit', '${f.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" style="padding: 6px 10px;" onclick="deleteFuel('${f.id}')"><i class="fas fa-trash"></i></button>`;
@@ -261,10 +269,6 @@ function renderFuelTablePage(page) {
             }
         }
         let budgetBadge = f.budget ? `<br><span class="badge-budget"><i class="fas fa-hashtag"></i> ศูนย์ต้นทุน: ${f.budget}</span>` : '';
-
-        // 🔴 หาประเภทภาษีมาแสดงในตาราง
-        const carObj = currentCarsList.find(c => c.plate === f.plate);
-        const taxTypeBadge = (carObj && carObj.taxType) ? ` <span style="font-size:12px; color:var(--text-light);">(${carObj.taxType})</span>` : '';
 
         tbody.innerHTML += `<tr>
             <td style="color: var(--text-light);">${formattedDate}</td>
@@ -282,6 +286,108 @@ function renderFuelTablePage(page) {
             paginationDiv.innerHTML += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="renderFuelTablePage(${i})">${i}</button>`; 
         } 
     }
+}
+
+// 🔴 รับค่า plate (เลขรถ) และ date (วันที่) เพิ่มเติม
+function printFuelDocs(receiptUrl, ypUrl, plate, date) {
+    if (!receiptUrl && !ypUrl) return Swal.fire('แจ้งเตือน', 'ไม่มีเอกสารให้พิมพ์', 'warning');
+
+    function getDirectUrl(url) {
+        if(!url || url === 'undefined') return null;
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+        return url;
+    }
+
+    const dReceipt = getDirectUrl(receiptUrl);
+    const dYp = getDirectUrl(ypUrl);
+
+    let printWindow = window.open('', '_blank');
+    let html = `
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <title>พิมพ์เอกสารเติมน้ำมัน</title>
+        <style>
+            @page { size: A4 portrait; margin: 5mm; }
+            html, body { 
+                margin: 0; padding: 0; 
+                height: 100%; width: 100%; 
+                box-sizing: border-box; 
+                font-family: sans-serif;
+                background: white;
+            }
+            body {
+                display: flex; flex-direction: column; 
+                align-items: center; justify-content: center; 
+                padding: 10px;
+            }
+            /* 🔴 หัวกระดาษสำหรับแสดงเลขรถและวันที่ */
+            .doc-header {
+                width: 100%;
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+                padding: 10px;
+                border-bottom: 2px dashed #ccc;
+                margin-bottom: 5px;
+                color: #1F2937;
+            }
+            .img-container { 
+                flex: 1; 
+                display: flex; flex-direction: column; justify-content: center; align-items: center; 
+                width: 100%; 
+                max-height: 46vh; /* ลดขนาดลงนิดหน่อยเพื่อเผื่อพื้นที่ให้ Header */
+                padding: 10px; 
+                box-sizing: border-box; 
+                page-break-inside: avoid;
+            }
+            img { 
+                max-width: 100%; 
+                max-height: calc(100% - 30px); 
+                object-fit: contain; 
+                border: 2px dashed #ccc; 
+                padding: 5px;
+            }
+            .title { margin-bottom: 5px; font-weight: bold; font-size: 16px; color: #333; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div class="doc-header">
+            🚗 ทะเบียนรถ: ${plate || '-'} &nbsp;&nbsp;|&nbsp;&nbsp; 📅 วันที่เติม: ${date || '-'}
+        </div>
+    `;
+
+    if (dReceipt) html += `<div class="img-container"><div class="title">📄 บิลน้ำมัน/ใบเสร็จ</div><img src="${dReceipt}" onload="imageLoaded()" onerror="imageLoaded()"></div>`;
+    if (dYp) html += `<div class="img-container"><div class="title">📄 เอกสาร ยพ.</div><img src="${dYp}" onload="imageLoaded()" onerror="imageLoaded()"></div>`;
+
+    html += `
+        <script>
+            let imgCount = document.querySelectorAll('img').length;
+            let loadedCount = 0;
+            let printed = false;
+            
+            function imageLoaded() {
+                loadedCount++;
+                if (loadedCount >= imgCount && !printed) {
+                    printed = true;
+                    setTimeout(() => { window.print(); }, 500); 
+                }
+            }
+            
+            setTimeout(() => { 
+                if(!printed) {
+                    printed = true;
+                    window.print(); 
+                }
+            }, 3000);
+        </script>
+    </body>
+    </html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
 }
 
 function openBudgetModal(id) { 
@@ -421,7 +527,6 @@ function updateFuelPlate() {
     document.getElementById('fuel-brand').value = ''; 
     document.getElementById('fuel-type').value = ''; 
     if(p) currentCarsList.filter(c => c.sangkat === s && c.phanek === p).forEach(c => {
-        // 🔴 แก้ไขโชว์ภาษีตอนเลือกทะเบียนรถเติมน้ำมัน
         const displayPlate = c.taxType ? `${c.plate} (${c.taxType})` : c.plate;
         select.add(new Option(displayPlate, c.plate));
     }); 
@@ -479,7 +584,6 @@ async function submitFuel() {
     if (!id && (!receiptFile || !ypFile)) return Swal.fire('แจ้งเตือน', 'กรุณาอัปโหลดเอกสารบิลและยพ.ให้ครบถ้วน', 'warning'); 
     if(!plate) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); 
     
-    // 🔴 หาประเภทภาษีมาแสดงในป๊อปอัปยืนยัน
     const selectedCarForTax = currentCarsList.find(c => c.plate === plate);
     const taxTypeStr = (selectedCarForTax && selectedCarForTax.taxType) ? ` (${selectedCarForTax.taxType})` : '';
 
