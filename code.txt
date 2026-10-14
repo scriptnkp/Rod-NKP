@@ -1,0 +1,365 @@
+// ==========================================
+// File: Code.gs (Google Apps Script Backend)
+// Role: API Server + Telegram Notifications + Tax Date
+// ==========================================
+
+const SHEET_ID = '1iQ79zKS__-USPXKX8gh6-avk1Bm_ZUezazcZdvxsPxE';
+const ROOT_IMAGE_FOLDER_ID = '1gXQlokJe-pH5qQTXrrJypYE_jp2ZTKfK';
+const TELEGRAM_BOT_TOKEN = '8670135888:AAEutuh1dKkiHNPosZTeDnEFhcPkW9l0Z0E'; 
+const TELEGRAM_CHAT_ID = '-5171424267';
+
+function sendTelegramMessage(message) {
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+  const payload = { chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'HTML' };
+  const options = { method: 'post', contentType: 'application/json', payload: JSON.stringify(payload), muteHttpExceptions: true };
+  UrlFetchApp.fetch(url, options);
+}
+
+function doPost(e) {
+  const headers = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
+  try {
+    const params = JSON.parse(e.postData.contents);
+    const action = params.action;
+
+    if (action === 'login') return returnJSON(loginUser(params.empId), headers);
+    if (action === 'get_users') return returnJSON(getUsers(), headers);
+    if (action === 'add_user') return returnJSON(addUser(params), headers);
+    if (action === 'edit_user') return returnJSON(editUser(params), headers);
+    if (action === 'delete_user') return returnJSON(deleteUser(params), headers);
+    if (action === 'get_cars') return returnJSON(getCars(), headers);
+    if (action === 'add_car') return returnJSON(addCar(params), headers);
+    if (action === 'edit_car') return returnJSON(editCar(params), headers);
+    if (action === 'delete_car') return returnJSON(deleteCar(params), headers);
+    if (action === 'save_inspection') return returnJSON(saveInspection(params), headers);
+    if (action === 'save_use_car') return returnJSON(saveUseCar(params), headers);
+    if (action === 'get_active_uses') return returnJSON(getActiveUses(), headers);
+    if (action === 'save_return_car') return returnJSON(saveReturnCar(params), headers);
+    if (action === 'get_fuels') return returnJSON(getFuels(), headers);
+    if (action === 'add_fuel') return returnJSON(addFuel(params), headers);
+    if (action === 'edit_fuel') return returnJSON(editFuel(params), headers);
+    if (action === 'delete_fuel') return returnJSON(deleteFuel(params), headers);
+    if (action === 'mark_fuel_debt') return returnJSON(markFuelDebt(params), headers);
+    if (action === 'save_fuel_budget') return returnJSON(saveFuelBudget(params), headers);
+    // 🟢 รับคำสั่งดึงข้อมูลประวัติการใช้รถสำหรับทำ ยพ.6
+    if (action === 'get_car_logs') return returnJSON(getCarLogs(), headers);
+
+  } catch(err) { return returnJSON({status: 'error', message: err.toString()}, headers); }
+}
+
+function returnJSON(data, headers) { 
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function saveBase64ToDrive(base64Str, plate, fileNamePrefix) {
+  if (!base64Str) return '';
+  try {
+    const splitBase = base64Str.split(',');
+    const type = splitBase[0].split(';')[0].replace('data:', ''); 
+    const byteCharacters = Utilities.base64Decode(splitBase[1]);
+    const d = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    const blob = Utilities.newBlob(byteCharacters, type, `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}-${fileNamePrefix}`);
+    const rootFolder = DriveApp.getFolderById(ROOT_IMAGE_FOLDER_ID);
+    const subFolderIterator = rootFolder.getFoldersByName(plate);
+    const folder = subFolderIterator.hasNext() ? subFolderIterator.next() : rootFolder.createFolder(plate);
+    const file = folder.createFile(blob); 
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return file.getUrl();
+  } catch(e) { return 'Error saving image'; }
+}
+
+// === USERS API ===
+function loginUser(empId) {
+  const data = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Users').getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { 
+    if (data[i][0].toString().trim() === empId.toString().trim()) 
+      return { status: 'success', data: { empId: data[i][0], name: data[i][1], department: data[i][2], role: data[i][3] } };
+  }
+  return { status: 'error', message: 'ไม่พบรหัสพนักงานนี้ในระบบ' };
+}
+
+function getUsers() {
+  const data = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Users').getDataRange().getValues();
+  let users = [];
+  for (let i = 1; i < data.length; i++) { 
+    if(data[i][0]) users.push({ empId: data[i][0], name: data[i][1], department: data[i][2], role: data[i][3] });
+  }
+  return { status: 'success', data: users };
+}
+
+function addUser(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Users');
+  const data = sheet.getDataRange().getValues();
+  for(let i=1; i<data.length; i++) { 
+    if(data[i][0].toString() === params.empId.toString()) return { status: 'error', message: 'รหัสพนักงานนี้มีในระบบแล้ว' };
+  }
+  sheet.appendRow([params.empId, params.name, params.department, params.role]); 
+  return { status: 'success', message: 'เพิ่มผู้ใช้งานสำเร็จ' };
+}
+
+function editUser(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Users'); 
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { 
+    if (data[i][0].toString() === params.originalEmpId.toString()) { 
+      sheet.getRange(i + 1, 1).setValue(params.empId);
+      sheet.getRange(i + 1, 2).setValue(params.name); 
+      sheet.getRange(i + 1, 3).setValue(params.department); 
+      sheet.getRange(i + 1, 4).setValue(params.role); 
+      return { status: 'success', message: 'อัปเดตข้อมูลสำเร็จ' };
+    } 
+  }
+  return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+function deleteUser(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Users');
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { 
+    if (data[i][0].toString() === params.empId.toString()) { 
+      sheet.deleteRow(i + 1);
+      return { status: 'success', message: 'ลบสำเร็จ' }; 
+    } 
+  }
+  return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+// === CARS API ===
+function getCars() {
+  const data = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Settings').getDataRange().getValues(); 
+  let cars = [];
+  for (let i = 1; i < data.length; i++) { 
+    if(data[i][0]) cars.push({ 
+      id: data[i][0], 
+      sangkat: data[i][1], 
+      phanek: data[i][2], 
+      plate: data[i][3], 
+      brand: data[i][4], 
+      type: data[i][5], 
+      taxDate: data[i][6] || '',
+      taxType: data[i][7] || '' // 🔴 เพิ่มการดึงค่า "ประเภทภาษี" ตรงนี้
+    });
+  }
+  return { status: 'success', data: cars };
+}
+
+function addCar(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Settings');
+  const lastRow = sheet.getLastRow();
+  const lastIdStr = lastRow > 1 ? sheet.getRange(lastRow, 1).getValue().toString() : "NKP000";
+  const lastIdNum = parseInt(lastIdStr.replace(/\D/g, '')) || 0;
+  const newId = "NKP" + ("000" + (lastIdNum + 1)).slice(-3);
+  // 🔴 เพิ่มพารามิเตอร์คอลัมน์ภาษี
+  sheet.appendRow([newId, params.sangkat, params.phanek, params.plate, params.brand, params.type, params.taxDate || '', params.taxType || '']); 
+  return { status: 'success', message: 'เพิ่มข้อมูลรถสำเร็จ' };
+}
+
+function editCar(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Settings'); 
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { 
+    if (data[i][0] === params.id) { 
+      sheet.getRange(i + 1, 2).setValue(params.sangkat);
+      sheet.getRange(i + 1, 3).setValue(params.phanek); 
+      sheet.getRange(i + 1, 4).setValue(params.plate); 
+      sheet.getRange(i + 1, 5).setValue(params.brand); 
+      sheet.getRange(i + 1, 6).setValue(params.type);
+      sheet.getRange(i + 1, 7).setValue(params.taxDate || '');
+      sheet.getRange(i + 1, 8).setValue(params.taxType || ''); // 🔴 อัปเดตคอลัมน์ภาษี
+      return { status: 'success', message: 'อัปเดตข้อมูลสำเร็จ' };
+    } 
+  }
+  return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+function deleteCar(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Settings');
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { 
+    if (data[i][0] === params.id) { 
+      sheet.deleteRow(i + 1);
+      return { status: 'success', message: 'ลบข้อมูลสำเร็จ' }; 
+    } 
+  }
+  return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+// === INSPECTIONS & USAGE ===
+function saveInspection(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('InspectionLogs'); 
+  const imageUrl = saveBase64ToDrive(params.imageBase64, params.plate, 'Ins');
+  const timestamp = Utilities.formatDate(new Date(), "Asia/Bangkok", "dd/MM/yyyy HH:mm:ss");
+  sheet.appendRow([timestamp, params.empName, params.sangkat, params.phanek, params.plate, params.c_light, params.c_tire, params.c_fluid, params.c_battery, params.c_brake, params.c_clean, params.note, imageUrl]);
+  sendTelegramMessage(`<b>🛠️ ตรวจสภาพรถยนต์</b>\nผู้ตรวจ: ${params.empName}\nรถ: ${params.plate}\nหมายเหตุ: ${params.note || '-'}`);
+  return { status: 'success', message: 'บันทึกการตรวจสภาพเรียบร้อยแล้ว' };
+}
+
+function saveUseCar(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('CarLogs'); 
+  const timestamp = Utilities.formatDate(new Date(), "Asia/Bangkok", "dd/MM/yyyy HH:mm:ss");
+  const useId = "USE" + new Date().getTime();
+  sheet.appendRow([useId, timestamp, params.empName, params.sangkat, params.phanek, params.plate, params.brand, params.type, params.startMile, params.location, 'กำลังใช้งาน', '']);
+  sendTelegramMessage(`<b>🚗 แจ้งขอใช้งานรถยนต์</b>\nผู้ขอใช้: ${params.empName}\nรถ: ${params.plate}\nสถานที่: ${params.location}\nเลขไมล์ก่อนเดินทาง: ${params.startMile}`);
+  return { status: 'success', message: 'บันทึกขอใช้งานรถสำเร็จ' };
+}
+
+function getActiveUses() {
+  const data = SpreadsheetApp.openById(SHEET_ID).getSheetByName('CarLogs').getDataRange().getValues(); 
+  let activeList = [];
+  for(let i = 1; i < data.length; i++) { 
+    if(data[i][10] === 'กำลังใช้งาน') { 
+      activeList.push({ useId: data[i][0], date: data[i][1], empName: data[i][2], plate: data[i][5], brand: data[i][6], location: data[i][9], startMile: data[i][8] });
+    } 
+  }
+  return { status: 'success', data: activeList };
+}
+
+function saveReturnCar(params) {
+  const carLogSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('CarLogs');
+  const returnLogSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('ReturnLogs'); 
+  const data = carLogSheet.getDataRange().getValues(); 
+  const timestamp = Utilities.formatDate(new Date(), "Asia/Bangkok", "dd/MM/yyyy HH:mm:ss");
+  for(let i = 1; i < data.length; i++) {
+    if(data[i][0] === params.useId) {
+      carLogSheet.getRange(i + 1, 11).setValue('คืนรถแล้ว');
+      carLogSheet.getRange(i + 1, 12).setValue(params.endMile); 
+      returnLogSheet.appendRow([timestamp, params.useId, params.empName, data[i][5], params.endMile]);
+      sendTelegramMessage(`<b>🔙 คืนรถเรียบร้อย</b>\nผู้คืน: ${params.empName}\nรถ: ${data[i][5]}\nระยะทางใช้งาน: ${parseFloat(params.endMile) - parseFloat(data[i][8])} กม.\nเลขไมล์ล่าสุด: ${params.endMile}`);
+      return { status: 'success', message: 'บันทึกคืนรถเสร็จสมบูรณ์' };
+    }
+  } 
+  return { status: 'error', message: 'ไม่พบรายการใช้งานนี้' };
+}
+
+// === FUELS API ===
+function getFuels() {
+  const data = SpreadsheetApp.openById(SHEET_ID).getSheetByName('FuelLogs').getDataRange().getValues(); 
+  let fuels = [];
+  for (let i = 1; i < data.length; i++) {
+    if(data[i][18]) { 
+      fuels.push({
+        date: data[i][0], empName: data[i][1], sangkat: data[i][2], phanek: data[i][3], plate: data[i][4], mile: data[i][5], fuelType: data[i][6], station: data[i][7], taxInvoice: data[i][8], price: data[i][9], quantity: data[i][10], totalAmount: data[i][11], receiptUrl: data[i][12], bookNo: data[i][13], docNo: data[i][14], ypUrl: data[i][15], network: data[i][16], wbs: data[i][17], id: data[i][18], isDebt: data[i][19] === true || data[i][19] === "TRUE" || data[i][19] === "ตั้งหนี้แล้ว", budget: data[i][20], debtNo: data[i][21] || '', payType: data[i][22] || ''
+      });
+    }
+  } 
+  return { status: 'success', data: fuels.reverse() };
+}
+
+function addFuel(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('FuelLogs');
+  let timestamp = Utilities.formatDate(new Date(), "Asia/Bangkok", "dd/MM/yyyy HH:mm:ss");
+  if (params.fuelDate) { 
+    const d = new Date(params.fuelDate);
+    timestamp = Utilities.formatDate(d, "Asia/Bangkok", "dd/MM/yyyy") + " 12:00:00"; 
+  }
+  const fuelId = "FUEL" + new Date().getTime();
+  const receiptUrl = saveBase64ToDrive(params.receiptBase64, params.plate, `receipt-${params.receiptName}`);
+  const ypUrl = saveBase64ToDrive(params.ypBase64, params.plate, `yp-${params.ypName}`);
+  
+  sheet.appendRow([timestamp, params.empName, params.sangkat, params.phanek, params.plate, params.mile, params.fuelType, params.station, params.taxInvoice, params.price, params.quantity, params.totalAmount, receiptUrl, params.bookNo, params.docNo, ypUrl, params.network, params.wbs, fuelId, params.isDebt, params.budget, '', params.payType]);
+  sendTelegramMessage(`<b>⛽ บันทึกเติมน้ำมัน (${params.payType})</b>\nผู้เติม: ${params.empName}\nรถ: ${params.plate}\n ยอดเงิน: ${params.totalAmount} บาท\nปั๊ม: ${params.station}`);
+  
+  return { status: 'success', message: 'บันทึกข้อมูลเติมน้ำมันสำเร็จ' };
+}
+
+function editFuel(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('FuelLogs'); 
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][18] === params.id) { 
+      if (params.fuelDate) { 
+        const d = new Date(params.fuelDate);
+        sheet.getRange(i + 1, 1).setValue(Utilities.formatDate(d, "Asia/Bangkok", "dd/MM/yyyy") + " 12:00:00"); 
+      }
+      sheet.getRange(i + 1, 3).setValue(params.sangkat);
+      sheet.getRange(i + 1, 4).setValue(params.phanek); 
+      sheet.getRange(i + 1, 5).setValue(params.plate); 
+      sheet.getRange(i + 1, 6).setValue(params.mile); 
+      sheet.getRange(i + 1, 7).setValue(params.fuelType); 
+      sheet.getRange(i + 1, 8).setValue(params.station);
+      sheet.getRange(i + 1, 9).setValue(params.taxInvoice); 
+      sheet.getRange(i + 1, 10).setValue(params.price); 
+      sheet.getRange(i + 1, 11).setValue(params.quantity); 
+      sheet.getRange(i + 1, 12).setValue(params.totalAmount); 
+      sheet.getRange(i + 1, 14).setValue(params.bookNo);
+      sheet.getRange(i + 1, 15).setValue(params.docNo); 
+      sheet.getRange(i + 1, 17).setValue(params.network); 
+      sheet.getRange(i + 1, 18).setValue(params.wbs); 
+      sheet.getRange(i + 1, 21).setValue(params.budget);
+      sheet.getRange(i + 1, 23).setValue(params.payType);
+      if (params.isDebt !== undefined) { sheet.getRange(i + 1, 20).setValue(params.isDebt); }
+      if (params.receiptBase64) sheet.getRange(i + 1, 13).setValue(saveBase64ToDrive(params.receiptBase64, params.plate, `receipt-${params.receiptName}`));
+      if (params.ypBase64) sheet.getRange(i + 1, 16).setValue(saveBase64ToDrive(params.ypBase64, params.plate, `yp-${params.ypName}`));
+      
+      return { status: 'success', message: 'อัปเดตข้อมูลสำเร็จ' };
+    }
+  } 
+  return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+function deleteFuel(params) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('FuelLogs');
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { 
+    if (data[i][18] === params.id) { 
+      sheet.deleteRow(i + 1);
+      return { status: 'success', message: 'ลบข้อมูลสำเร็จ' }; 
+    } 
+  }
+  return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+function markFuelDebt(params) {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('FuelLogs'); 
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) { 
+      if (data[i][18] === params.id) { 
+        sheet.getRange(i + 1, 20).setValue("ตั้งหนี้แล้ว");
+        sheet.getRange(i + 1, 22).setValue(params.debtNo); 
+        return { status: 'success', message: 'ตั้งหนี้เรียบร้อยแล้ว' };
+      } 
+    }
+    return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+function saveFuelBudget(params) {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('FuelLogs'); 
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) { 
+      if (data[i][18] === params.id) { 
+        sheet.getRange(i + 1, 21).setValue(params.budget);
+        return { status: 'success', message: 'บันทึกงบสำเร็จ' }; 
+      } 
+    }
+    return { status: 'error', message: 'ไม่พบข้อมูล' };
+}
+
+// 🟢 [ส่วนที่เพิ่มใหม่] ฟังก์ชันดึงประวัติการใช้รถทั้งหมดให้ ยพ.6
+function getCarLogs() {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('CarLogs');
+    if (!sheet) return { status: 'error', message: 'ไม่พบชีตชื่อ CarLogs' };
+    
+    const data = sheet.getDataRange().getDisplayValues();
+    if (data.length < 2) return { status: 'success', data: [] }; // ถ้าชีตว่างเปล่า
+    
+    const headers = data[0];
+    const result = [];
+    // วนลูปอ่านข้อมูลตั้งแต่บรรทัดที่ 2 ลงไป (ข้าม Header)
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const obj = {};
+      
+      // เอาหัวคอลัมน์ภาษาไทยมาทำเป็น Key
+      for (let j = 0; j < headers.length; j++) {
+        const headerName = headers[j] ? headers[j].toString().trim() : "Col" + j;
+        obj[headerName] = row[j] ? row[j].toString().trim() : "";
+      }
+      result.push(obj);
+    }
+    
+    return { status: 'success', data: result };
+  } catch(e) {
+    return { status: 'error', message: e.toString() };
+  }
+}
