@@ -199,7 +199,7 @@ async function submitUseCar() {
     try { 
         const res = await apiCall(payload); 
         if(res.status === 'success') { 
-            Swal.fire('สำเร็จ', res.message, 'success'); 
+            Swal.fire('ส่งคำขอแล้ว', 'รอ Admin อนุมัติก่อนนำรถไปใช้งาน', 'success'); 
             loadPage('use'); 
         } 
     } catch(e) {

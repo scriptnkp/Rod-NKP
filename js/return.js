@@ -77,11 +77,12 @@ async function renderReturnPage(container) {
             }
             
             // หมายเหตุ: เอาปุ่มออกชั่วคราวตอนแสดงผลในภาพแคปจอ (ใช้ CSS ช่วยซ่อนผ่าน html2canvas ได้ แต่วิธีนี้ชัวร์สุด)
+            const isPending = use.status === PENDING_STATUS;
             grid.innerHTML += `
                 <div class="use-card capture-card">
                     <div class="use-card-header">
                         <div class="use-card-plate"><i class="fas fa-car-side"></i> ${use.plate}</div>
-                        <div class="use-card-badge">กำลังใช้งาน</div>
+                        <div class="use-card-badge"${isPending ? ' style="background:#E0E7FF; color:#3730A3;"' : ''}>${isPending ? 'รออนุมัติ' : 'กำลังใช้งาน'}</div>
                     </div>
                     <div class="use-card-detail"><strong>ผู้เบิก:</strong> ${use.empName}</div>
                     <div class="use-card-detail"><strong>สถานที่:</strong> ${use.location}</div>
@@ -98,9 +99,9 @@ async function renderReturnPage(container) {
                         </div>
                     </div>
 
-                    <button class="btn btn-warning no-capture-btn" style="width:100%;" onclick="openReturnModal('${use.useId}', '${use.plate}', '${use.startMile}')">
+                    ${isPending ? `<button class="btn btn-outline no-capture-btn" style="width:100%; cursor:not-allowed; opacity:0.7;" disabled><i class="fas fa-hourglass-half"></i> รอ Admin อนุมัติ</button>` : `<button class="btn btn-warning no-capture-btn" style="width:100%;" onclick="openReturnModal('${use.useId}', '${use.plate}', '${use.startMile}')">
                         <i class="fas fa-key"></i> ดำเนินการคืนรถ
-                    </button>
+                    </button>`}
                 </div>`; 
         }); 
     } catch (error) {

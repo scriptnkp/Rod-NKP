@@ -83,13 +83,14 @@ async function renderMainDashboard(container) {
         myTaskHtml = `<h3 style="margin-bottom: 15px; font-size: 18px;"><i class="fas fa-bell text-warning"></i> รายการที่รอส่งคืน</h3><div class="card-grid" style="margin-top:0;">`;
         myActiveCars.forEach(u => { 
             // 🔴 เปลี่ยน onclick ให้เรียกฟังก์ชัน openReturnModal โดยตรง
+            const isPending = u.status === PENDING_STATUS;
             myTaskHtml += `
                 <div class="use-card" style="border-left: 4px solid var(--warning);">
                     <div class="use-card-header"><div class="use-card-plate">${u.plate}</div></div>
                     <div class="use-card-detail"><strong>สถานที่:</strong> ${u.location}</div>
-                    <button class="btn btn-warning" style="width:100%; margin-top:10px;" onclick="openReturnModal('${u.useId}', '${u.plate}', '${u.startMile}')">
+                    ${isPending ? `<button class="btn btn-outline" style="width:100%; margin-top:10px; cursor:not-allowed; opacity:0.7;" disabled><i class="fas fa-hourglass-half"></i> รอ Admin อนุมัติ</button>` : `<button class="btn btn-warning" style="width:100%; margin-top:10px;" onclick="openReturnModal('${u.useId}', '${u.plate}', '${u.startMile}')">
                         ดำเนินการคืนรถ
-                    </button>
+                    </button>`}
                 </div>`; 
         }); 
         myTaskHtml += `</div>`;
@@ -116,8 +117,10 @@ async function renderMainDashboard(container) {
             <div class="action-card" onclick="loadPage('fuel', document.querySelectorAll('.menu-item')[4])"><i class="fas fa-gas-pump" style="color: var(--danger);"></i><span>เติมน้ำมัน</span></div>
             
             <div class="action-card" onclick="loadPage('utility', document.querySelectorAll('.menu-item')[6] || null)"><i class="fas fa-briefcase" style="color: #8B5CF6;"></i><span>อรรถประโยชน์</span></div>
+            ${user.role === 'Admin' ? `<div class="action-card" style="position:relative;" onclick="loadPage('approve', document.getElementById('menu-admin-approve'))"><i class="fas fa-user-check" style="color: var(--success);"></i><span>อนุมัติใช้รถ</span><b id="quick-approve-badge" style="display:none; position:absolute; top:8px; right:8px; background:var(--danger); color:#fff; font-size:12px; min-width:22px; padding:2px 6px; border-radius:11px;">0</b></div>` : ''}
         </div>
 
         <div class="form-box" style="margin-top: 0; padding: 20px;">${myTaskHtml}</div>
     `;
+    updateApproveBadges();
 }

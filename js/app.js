@@ -80,6 +80,7 @@ async function loadPage(page, element = null) {
     else if(page === 'car-settings') { renderAdminCarPage(contentDiv); }
     else if(page === 'user-settings') { renderAdminUserPage(contentDiv); }
     else if(page === 'utility') { renderUtilityPage(contentDiv); }
+    else if(page === 'approve') { renderApprovePage(contentDiv); }
 }
 
 // --- ระบบเข้าสู่ระบบ & ควบคุมสิทธิ์ (Authentication & Profile) ---
@@ -134,14 +135,17 @@ function renderDashboard(userData) {
     document.getElementById('dashboard-screen').style.display = 'flex'; 
     document.getElementById('user-display-name').innerHTML = `<i class="fas fa-user-circle"></i> ${userData.name} (${userData.role})`; 
     
+    document.getElementById('menu-admin-approve').classList.toggle('hidden', userData.role !== 'Admin');
     // เปิดการแสดงผลเมนูผู้ดูแลระบบ (Admin)
     if(userData.role === 'Admin') { 
         document.getElementById('menu-admin-car').classList.remove('hidden'); 
         document.getElementById('menu-admin-user').classList.remove('hidden'); 
+        startApprovalPolling();
     } 
 }
 
 function logout() { 
+    stopApprovalPolling();
     localStorage.removeItem('user_session'); 
     document.getElementById('dashboard-screen').style.display = 'none'; 
     document.getElementById('login-screen').style.display = 'flex'; 

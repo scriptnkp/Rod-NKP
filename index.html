@@ -47,6 +47,7 @@
             <a class="menu-item" onclick="loadPage('report', this)"><i class="fas fa-chart-bar text-success"></i> รายงาน / PDF</a>
             <a class="menu-item hidden" id="menu-admin-car" onclick="loadPage('car-settings', this)"><i class="fas fa-database text-primary"></i> ข้อมูลรถ (Admin) <span id="sidebar-car-alert" style="color:var(--danger); margin-left:auto; display:none;"><i class="fas fa-exclamation-triangle"></i></span></a>
             <a class="menu-item hidden" id="menu-admin-user" onclick="loadPage('user-settings', this)"><i class="fas fa-users text-primary"></i> ข้อมูลผู้ใช้ (Admin)</a>
+            <a class="menu-item hidden" id="menu-admin-approve" onclick="loadPage('approve', this)"><i class="fas fa-user-check" style="color: var(--success);"></i> อนุมัติใช้รถ (Admin) <span id="sidebar-approve-badge" style="display:none; margin-left:auto; background:var(--danger); color:#fff; font-size:12px; font-weight:600; min-width:20px; text-align:center; padding:2px 7px; border-radius:10px;">0</span></a>
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
             <a class="menu-item" onclick="loadPage('utility', this)"><i class="fas fa-briefcase" style="color: #8B5CF6;"></i> อรรถประโยชน์</a>
             <a class="menu-item" style="color: var(--danger);" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</a>
@@ -194,6 +195,7 @@
     <script src="js/report.js"></script>
     <script src="js/admin-car.js"></script>
     <script src="js/admin-user.js"></script>
+    <script src="js/approve.js"></script>
     <script src="js/utility.js"></script>
 </body>
 </html>
